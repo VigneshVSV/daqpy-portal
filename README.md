@@ -1,6 +1,6 @@
 # Dashboard UI
 
-GUI in ReactJS for [`daqpy`]() python library   
+GUI in ReactJS for [`hololinked`]() python library   
 
 ### Installation
 
