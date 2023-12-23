@@ -20,20 +20,40 @@ import { DashboardView } from './builtins/dashboard-view';
 import { globalAppState } from './builtins/app-state';
 import { UnsafeClient } from './builtins/remote-object-client/view';
 import { StateManager } from './mobx/state-manager';
+import { useLocationProperty, navigate } from "wouter/use-location";
+import isElectron from 'is-electron';
 
+
+// returns the current hash location in a normalized form - (excluding the leading '#' symbol)
+// from wouter docs
+const hashLocation = () => window.location.hash.replace(/^#/, "") || "/";
+
+const hashNavigate = (to : string) => navigate("#" + to);
+
+const useHashLocation = () => {
+    const location = useLocationProperty(hashLocation);
+    return [location, hashNavigate];
+};
 
 
 const App = () => {
     
+    const packagedApp = useRef<boolean>(isElectron()) 
+    // Module to control application life.
     const [location, setLocation] = useLocation()
     const dashboardStateManager = useRef<StateManager | null>(null)
     const dashboardURL = useRef<string>('')
     const globalRouter = useRouter()
 
+    console.log("isElectron", packagedApp.current)
+
     return (
         <div>
             <ThemeProvider theme = {theme}>      
-                <Router>
+                <Router 
+                    // @ts-ignore
+                    hook={packagedApp.current ? useHashLocation : null}
+                >
                     <Route path='/'>
                         <SignIn 
                             globalState={globalAppState} 

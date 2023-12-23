@@ -1,5 +1,9 @@
 // https://stackoverflow.com/questions/57531216/can-i-create-a-windows-exe-from-a-react-project
+
 const electron = require('electron')
+const path = require("path");
+const url = require('url');
+
 
 // Module to control application life.
 const app = electron.app
@@ -12,16 +16,25 @@ let mainWindow
 
 function createWindow () {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600})
-
+    mainWindow = new BrowserWindow({
+        width: 800, 
+        height: 600,
+    })
     // and load the index.html of the app.
     // 'public' is the path where webpack bundles my app
     // mainWindow.loadURL(`file://${__dirname}/public/index.html`);
     // or the port 
-    mainWindow.loadURL('http://localhost:3000')
-
+    // mainWindow.loadURL('http://localhost:3000')
+    const appURL = app.isPackaged? url.format({
+            pathname: `${__dirname}/../build/index.html`,
+            protocol: "file:",
+            slashes: true,
+        })
+        : "http://localhost:3000";
+    mainWindow.loadURL(appURL)
+    
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
