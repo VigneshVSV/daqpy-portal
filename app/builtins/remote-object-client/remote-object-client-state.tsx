@@ -1,6 +1,7 @@
+'use client'
 // Internal & 3rd party functional libraries
 import { makeObservable, observable, action } from 'mobx';
-import { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 // Custom functional libraries
 import { asyncRequest } from 'mobx-render-engine/utils/http';
 import { fetchFieldFromLocalStorage } from 'mobx-render-engine/utils/misc';
@@ -55,6 +56,20 @@ export class RemoteObjectClientState {
 
     constructor() {
 
+        this.remoteObjectInfo = emptyRemoteObjectInformation
+        this.fetchSuccessful = true 
+        this.remoteObjectState = ''
+        this.stringifyOutput = false 
+        this.showSettings = false
+        this.errorMessage = ''
+        this.errorTraceback = null 
+        this.hasError = false  
+        this.lastResponse = null 
+        this.eventSources = {}
+        this.baseURL = ''
+        this.domain = ''
+        this.existingRO_URLs = typeof window !== 'undefined'? fetchFieldFromLocalStorage('remote-object-locator-text-input', []) : []
+   
         makeObservable(this, {
             remoteObjectInfo : observable,
             fetchRemoteObjectInfo : action,
@@ -88,19 +103,6 @@ export class RemoteObjectClientState {
             addEventSource : action,
             removeEventSource : action
         })
-        this.remoteObjectInfo = emptyRemoteObjectInformation
-        this.fetchSuccessful = true 
-        this.remoteObjectState = ''
-        this.stringifyOutput = false 
-        this.showSettings = false
-        this.errorMessage = ''
-        this.errorTraceback = null 
-        this.hasError = false  
-        this.lastResponse = null 
-        this.eventSources = {}
-        this.baseURL = ''
-        this.domain = ''
-        this.existingRO_URLs = fetchFieldFromLocalStorage('remote-object-locator-text-input', [])
     }
 
 
@@ -171,7 +173,7 @@ export class RemoteObjectClientState {
 
         try {
             let baseurl = arg ? arg : this.baseURL
-            const response = await asyncRequest({
+            const response = await axios({
                 url : "/resources/gui", 
                 method : "get", 
                 baseURL : baseurl,
@@ -197,7 +199,7 @@ export class RemoteObjectClientState {
                 this.setFetchSuccessful(true)
                 this.resetError()
             }
-            else if(response.data.exception) {
+            else if(response.data && response.data.exception) {
                 this.setFetchSuccessful(false)
                 this.setError(response.data.exception.message, response.data.exception.traceback)
                 if(this.stringifyOutput)

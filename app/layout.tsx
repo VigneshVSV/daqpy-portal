@@ -1,5 +1,5 @@
 'use client'
-
+import NoSSR from '@/app/utils/no-ssr'
 
 export default function RootLayout({
     children,
@@ -9,7 +9,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                {children}
+                <NoSSR>
+                    {children}
+                </NoSSR>
             </body>
         </html>
     )

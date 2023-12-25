@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import { SyntheticEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AxiosRequestConfig, AxiosResponse } from "axios";

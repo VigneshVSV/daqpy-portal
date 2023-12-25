@@ -5,15 +5,15 @@ import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation'
 // Custom functional libraries
 import { ApplicationState, GlobalStateContext } from '../mobx/state-container';
+import { createStateManager } from "mui-mobx-render-engine/component-registration";
+import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, 
         Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Tooltip,
        } from '@mui/material';
-import * as IconsMaterial from '@mui/icons-material'
+import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
-import { createStateManager } from "mui-mobx-render-engine/component-registration"
-// import { ApplicationState } from '../mobx/state-container';
-import { ErrorViewer, useAutoCompleteOptionsFromLocalStorage, useDashboard } from './reuse-components';
+import { ErrorViewer } from './reuse-components';
 
 
 
@@ -29,9 +29,9 @@ function Footer(props: any) {
         >
             <Link 
                 color="inherit" 
-                onClick={()=>window.open(link, '_blank')} 
+                onClick={() => window.open(link, '_blank')} 
                 underline="hover" 
-                sx={{cursor:'pointer'}} 
+                sx={{ cursor:'pointer' }} 
                 rel="noopener noreferrer"
             >
                     {text}
@@ -233,8 +233,8 @@ export const SignIn = observer(() => {
                     {globalState.appsettings.loginDisplayFooter ? 
                         <Footer 
                             sx={{ mt: 4, mb: 4 }} 
-                            text={globalState.appsettings.loginFooter} 
-                            link={globalState.appsettings.loginFooterLink} 
+                            text={globalState.appsettings.login.footer} 
+                            link={globalState.appsettings.login.footerLink} 
                         /> : null 
                     }
                 </Grid>

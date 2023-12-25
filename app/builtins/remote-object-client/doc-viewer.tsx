@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import * as React from 'react';
 import {  useCallback, useState } from "react";
@@ -7,7 +8,7 @@ import { AxiosResponse } from 'axios';
 // Custom functional libraries
 import { asyncRequest } from "mobx-render-engine/utils/http";
 // Internal & 3rd party component libraries
-import TablePagination, { tablePaginationClasses as classes } from '@mui/base/TablePagination';
+import {TablePagination, tablePaginationClasses as classes } from '@mui/base/TablePagination';
 import { Box, Button, Stack, Typography,  TextField, ButtonGroup, 
      IconButton, Autocomplete } from "@mui/material"
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';

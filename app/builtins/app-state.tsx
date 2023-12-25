@@ -1,3 +1,4 @@
+'use client'
 import { Logger } from "mobx-render-engine/utils/logger";
 import { ApplicationState } from "../mobx/state-container"
 

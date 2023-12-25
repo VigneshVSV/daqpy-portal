@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import React, { ChangeEvent, useEffect, useState, useRef } from "react";
 import { AxiosRequestConfig, AxiosResponse } from "axios";

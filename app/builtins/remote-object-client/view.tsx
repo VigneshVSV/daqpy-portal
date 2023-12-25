@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import {  useState, useRef, useCallback, useEffect } from "react";
 import { observer } from "mobx-react-lite";

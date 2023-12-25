@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // Custom functional libraries
