@@ -1,3 +1,4 @@
+'use client'
 // Internal & 3rd party functional libraries
 import { makeObservable, observable, action, computed, override } from 'mobx';
 import axios, { AxiosResponse } from 'axios';
@@ -5,6 +6,7 @@ import axios, { AxiosResponse } from 'axios';
 import { asyncRequest } from 'mobx-render-engine/utils/http';
 import { ScriptImporterData, remoteObjectWizardData } from '../builtins/http-server-wizard/remote-object-wizard-data-container';
 import { ComponentState } from 'mobx-render-engine/state-container';
+import { createContext } from 'react';
 // Internal & 3rd party component libraries
 // Custom component libraries
 
@@ -31,7 +33,7 @@ export type ApplicationSettings = {
         allowHTTP : boolean
     } 
     remoteObjectViewer : {
-        Console : {
+        console : {
             stringifyOutput : boolean 
             defaultMaxEntries : number 
             defaultWindowSize : number
@@ -65,13 +67,13 @@ export class PythonServer {
         this.remoteObjectState = info.remoteObjectState
     }
 
-    get remote_objects() {
+    get remoteObjects() {
         if(this._remoteObjectInfo)
             return this._remoteObjectInfo.map((info) => {return info.instance_name})
         return []
     }
 
-    get remoteObjectInfo () {
+    get remoteObjectsInfo() {
         // if(this._remoteObjectInfo)
         //     return this._remoteObjectInfo.reduce((totalInfo : any, currentInfo) => {
         //             totalInfo[currentInfo.instance_name] = currentInfo
@@ -79,7 +81,7 @@ export class PythonServer {
         return this._remoteObjectInfo
     }
 
-    get remote_object_classes() {
+    get remoteObjectsClasses() {
         if(this._remoteObjectInfo)
             return this._remoteObjectInfo.filter((info) => (info.class_name !== 'EventLoop' && info.class_name !== 'HTTPServerUtilities'))
         return []
@@ -90,8 +92,8 @@ export class PythonServer {
             return this._remoteObjectInfo.filter((info) => info.class_name === 'EventLoop').map((info) => {return info.instance_name})
         return []
     }
-
 }
+
 
 const PRIMARY_HOST = 'PRIMARY_HOST'
 
@@ -105,6 +107,45 @@ export class ApplicationState {
     HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData; };
 
     constructor(appData : ApplicationData) {
+        this.loggedIn    = false
+        this.primaryHostServer = null
+        this.additionalHostServers = []
+        this.appsettings = {
+            dashboards : {
+                deleteWithoutAsking : true,
+                showRecentlyUsed : true,
+            },
+            login : {
+                footer :  '',
+                footerLink  : '',
+                show :  true,
+            },
+            servers : {
+                allowHTTP : true,
+            },
+            remoteObjectViewer : {
+                console : {
+                    stringifyOutput : false,
+                    defaultMaxEntries : 10,
+                    defaultWindowSize : 500,
+                    defaultFontSize : 16,
+                }
+            }
+        }
+        this.servers = []
+        this.HTTPServerWizardData = {
+            remoteObjectWizardData : new remoteObjectWizardData({
+                id : null, 
+                scriptImporterData : new ScriptImporterData({
+                    useExistingRemoteObject : false,
+                    className : '',
+                    script : '', 
+                    useExistingEventloop : false, 
+                    eventloopInstanceName : '' 
+                }), 
+                successfulSteps : [false, false, false] 
+            })
+        }
         makeObservable(this, {
                 loggedIn    : observable,
                 appsettings : observable,
@@ -114,39 +155,6 @@ export class ApplicationState {
                 logout      : action
             }
         )
-      
-        this.loggedIn    = false
-        this.primaryHostServer = null
-        this.additionalHostServers = []
-        this.appsettings = {
-            dashboardsDeleteWithoutAsking : true,
-            dashboardsShowRecentlyUsed : true,
-            loginFooter : '',
-            loginFooterLink : '',
-            loginDisplayFooter : true,
-            serversAllowHTTP : true,
-            remoteObjectViewerConsoleStringifyOutput : false,
-            remoteObjectViewerConsoleDefaultMaxEntries : 10,
-            remoteObjectViewerConsoleDefaultWindowSize : 500,
-            remoteObjectViewerConsoleDefaultFontSize : 16,
-            // stringifyConsoleOutput : false 
-        }
-        this.servers = []
-        this.HTTPServerWizardData = {
-            remoteObjectWizardData : new remoteObjectWizardData(
-                            { id : null, 
-                            scriptImporterData : new ScriptImporterData({
-                                useExistingRemoteObject : false,
-                                className : '',
-                                script : '', 
-                                useExistingEventloop : false, 
-                                eventloopInstanceName : '' 
-                            }
-                            ), 
-                            successfulSteps : [false, false, false] 
-                        }
-                        )
-        }
     }
 
     login() {
@@ -166,7 +174,7 @@ export class ApplicationState {
                 field : field, 
                 value : value
             },
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            // httpsAgent: new https.Agent({ rejectUnauthorized: false })
         }) as AxiosResponse
         // console.log(response)
         if(response.status === 200) {
@@ -181,12 +189,12 @@ export class ApplicationState {
             url : 'dashboard-util/app/info/all', 
             method : 'get',
             baseURL : serverURL,
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            // httpsAgent: new https.Agent({ rejectUnauthorized: false })
         }), axios({
             url : 'server-util/subscribers', 
             method : 'get',
             baseURL : serverURL,
-            httpsAgent: new https.Agent({ rejectUnauthorized: false })
+            // httpsAgent: new https.Agent({ rejectUnauthorized: false })
         })]).then((responses) => {
             // console.log(responses)
             // debugger
@@ -240,7 +248,7 @@ export class ApplicationState {
                 url : 'server-util/info/all', 
                 method : 'get',
                 baseURL : getFullDomain(server),
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                // httpsAgent: new https.Agent({ rejectUnauthorized: false })
             })            
         })).then((responses) => {
             for(let i=0; i < responses.length; i++){
@@ -260,7 +268,7 @@ export class ApplicationState {
         let tree : object = {}
         let all_remote_objects = this.servers.map((server) => {
             let ro = []
-            for(let ro_info of server.remoteObjectInfo)
+            for(let ro_info of server.remoteObjectsInfo)
                 ro.push(ro_info.instance_name)
             return ro}).flat()
         for(let RO of all_remote_objects){
@@ -292,3 +300,6 @@ export type ComponentStateMap = {
 export function getFullDomain(server : PythonServer) {
     return server.https? "https://" + server.qualifiedIP : "http://" + server.qualifiedIP
 }
+
+
+export const GlobalStateContext = createContext<ApplicationState | null>(null)
