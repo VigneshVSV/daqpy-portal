@@ -1,24 +1,25 @@
+// Internal & 3rd party functional libraries
 import { SyntheticEvent, useCallback, useEffect, useRef, useState } from "react";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
+// Custom functional libraries
+import { getFormattedTimestamp } from "mobx-render-engine/utils/misc";
+import { asyncRequest } from "mobx-render-engine/utils/http";
+import { createStateManager } from "mui-mobx-render-engine/component-registration";
+import { StateManager, Action, BaseAction } from "mobx-render-engine/state-manager";
+// Internal & 3rd party component libraries
 import { Stack, Typography, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
     RadioGroup, Box, Chip, Radio, useTheme, TextField, Link, Autocomplete, IconButton } from "@mui/material";
-import * as https from 'https';
-import { AxiosRequestConfig, AxiosResponse } from "axios";
 import NewWindow from "react-new-window";
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
-
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
 import "ace-builds/src-noconflict/ext-language_tools";
-    
+// Custom component libraries 
 import { TabPanel } from "../reuse-components";
-import { getFormattedTimestamp } from "../../utils/misc";
-import { asyncRequest } from "../../utils/http";
 import { ParameterInformation, PlotlyInfo } from "./remote-object-info-containers";
-import { createStateManager } from "../component-registration";
-import { StateManager, Action, BaseAction } from "../../mobx/state-manager";
 import { RemoteObjectClientState } from "./remote-object-client-state";
 import UnstyledTable from "./doc-viewer";
 
@@ -138,7 +139,7 @@ export const ParameterRWClient = (props : ParameterClientProps) => {
                     url : fullpath, 
                     method : props.parameter.scada_info.http_method[0] as any, 
                     baseURL : props.clientState.domain,
-                    httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                    // httpsAgent: new https.Agent({ rejectUnauthorized: false })
                 }
             else 
                 request = {
@@ -149,7 +150,7 @@ export const ParameterRWClient = (props : ParameterClientProps) => {
                         value : parseWithInterpretation(paramValue, props.parameter.type) 
                     },
                     baseURL : props.clientState.domain,
-                    httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                    // httpsAgent: new https.Agent({ rejectUnauthorized: false })
                 }
             const requestTime = getFormattedTimestamp()
             const requestTime_ = Date.now()
@@ -530,6 +531,7 @@ const useMobXVisualization = (parameter : ParameterInformation, clientState : Re
                 if(!parameter.visualization.actions[key].URL.startsWith('http'))
                     parameter.visualization.actions[key].URL = clientState.baseURL + parameter.visualization.actions[key].URL
             }
+            // @ts-ignore CHECK WHY ITS COMPLAINING
             visualizationStateManager.updateActions(parameter.visualization.actions)
             let [id, state] = createVisualizationComponentState(parameter)
             let components : { [key : string] : any } = { "__App__" : {
@@ -537,6 +539,7 @@ const useMobXVisualization = (parameter : ParameterInformation, clientState : Re
                 children : [id]
             }}
             components[id] = state  
+            // @ts-ignore
             visualizationStateManager.updateComponents(components)
             shouldItRender = true
         }

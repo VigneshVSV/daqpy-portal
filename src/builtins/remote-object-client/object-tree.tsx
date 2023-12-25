@@ -1,12 +1,16 @@
+// Internal & 3rd party functional libraries
 import * as React from 'react';
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { alpha, styled } from '@mui/material/styles';
-import TreeView from '@mui/lab/TreeView';
-import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
-import { ApplicationState, PythonServer, getFullDomain } from '../../mobx/state-container';
+// import TreeView from '@mui/lab/TreeView';
+// import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
+import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
 import { Stack, Typography, Link, Divider, Box, IconButton, FormControl, InputLabel, Select, MenuItem, Checkbox, 
             ListItemText, OutlinedInput, SelectChangeEvent } from '@mui/material';
-import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
+// Custom component libraries 
+import { ApplicationState, PythonServer, getFullDomain } from '../../mobx/state-container';
 
 
 
@@ -43,20 +47,20 @@ function CloseSquare(props: SvgIconProps) {
 }
 
 
-const StyledTreeItem = styled((props: TreeItemProps) => (
-    <TreeItem {...props}  />
-    ))(({ theme }) => ({
-        [`& .${treeItemClasses.iconContainer}`]: {
-        '& .close': {
-        opacity: 0.3,
-        },
-        },
-        [`& .${treeItemClasses.group}`]: {
-        marginLeft: 15,
-        paddingLeft: 18,
-        borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
-        },
-}));
+// const StyledTreeItem = styled((props: TreeItemProps) => (
+//     <TreeItem {...props}  />
+//     ))(({ theme }) => ({
+//         [`& .${treeItemClasses.iconContainer}`]: {
+//         '& .close': {
+//         opacity: 0.3,
+//         },
+//         },
+//         [`& .${treeItemClasses.group}`]: {
+//         marginLeft: 15,
+//         paddingLeft: 18,
+//         borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+//         },
+// }));
 
 export type RemoteObjectTreeProps = {
     globalState : ApplicationState,
@@ -122,7 +126,7 @@ export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteOb
             >
                 {(globalState.primaryHostServer as PythonServer).qualifiedIP}
             </Link> 
-            <TreeView
+            {/* <TreeView
                 id="remote-object-tree-view"
                 defaultExpanded={['1']}
                 defaultCollapseIcon={<MinusSquare />}
@@ -150,6 +154,7 @@ export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteOb
                         </IconButton>
                         {/* <ClickAwayListener onClickAway={handleSelectClose}>
                             <div> */}
+                        {/*
                             <FormControl sx={{ m: 1, width: 300 }}>
                                 <InputLabel id="demo-multiple-checkbox-label" size="small" >options</InputLabel>
                                 <Select
@@ -175,10 +180,11 @@ export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteOb
                             </FormControl>
                             {/* </div>
                         </ClickAwayListener> */}
+                    {/*
                     </Stack>
                 </Box>
                 <SegregatedTreeItems globalState={globalState} segregationType={segregationType} />
-            </TreeView>
+            </TreeView> */}
         </Stack>
     );
 }
@@ -198,20 +204,20 @@ const SegregatedTreeItems = ( {globalState, segregationType} : SegregatedTreeIte
                             {globalState.servers.map((server : PythonServer, index : number) => {
                                 return( 
                                     server.qualifiedIP === (globalState.primaryHostServer as PythonServer).qualifiedIP ? 
-                                    null :
-                                    <StyledTreeItem 
-                                        nodeId={server.qualifiedIP} 
-                                        label={server.qualifiedIP}
-                                        key={server.qualifiedIP}    
-                                    >
-                                    {server.remote_objects.map((instance_name, index) =>
-                                        <StyledTreeItem 
-                                            nodeId={getFullDomain(server) + '/' + instance_name} 
-                                            label={instance_name}
-                                            key={instance_name}
-                                        />
-                                    )}
-                                </StyledTreeItem> 
+                                    null : <div>commented out</div>
+                                    // <StyledTreeItem 
+                                    //     nodeId={server.qualifiedIP} 
+                                    //     label={server.qualifiedIP}
+                                    //     key={server.qualifiedIP}    
+                                    // >
+                                    //     {server.remote_objects.map((instance_name, index) =>
+                                    //         <StyledTreeItem 
+                                    //             nodeId={getFullDomain(server) + '/' + instance_name} 
+                                    //             label={instance_name}
+                                    //             key={instance_name}
+                                    //         />
+                                    //     )}
+                                    // </StyledTreeItem> 
                             )})}
                         </>
                     )  
@@ -227,21 +233,23 @@ export const SlashSegregatedRemoteObjects = ({ tree } : any) => {
                 Object.keys(tree).map((key : string, index : number) => {
                     if(typeof tree[key] === 'string'){
                         return(
-                            <StyledTreeItem
-                                key={tree[key]}
-                                nodeId={tree[key]}
-                                label={key}
-                            /> 
+                            <div>commented out 2</div>
+                            // <StyledTreeItem
+                            //     key={tree[key]}
+                            //     nodeId={tree[key]}
+                            //     label={key}
+                            // /> 
                         )
                     }
                     return (    
-                        <StyledTreeItem
-                            key={key}
-                            nodeId={key}
-                            label={key}
-                        >
-                            <SlashSegregatedRemoteObjects tree={tree[key]} />
-                        </StyledTreeItem>
+                        <div>commented out 3</div>
+                        // <StyledTreeItem
+                        //     key={key}
+                        //     nodeId={key}
+                        //     label={key}
+                        // >
+                        //     <SlashSegregatedRemoteObjects tree={tree[key]} />
+                        // </StyledTreeItem>
                     )
                 })
             }

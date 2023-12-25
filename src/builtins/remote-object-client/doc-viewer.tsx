@@ -1,18 +1,20 @@
+// Internal & 3rd party functional libraries
 import * as React from 'react';
-import { styled } from '@mui/system';
-import TablePagination, { tablePaginationClasses as classes } from '@mui/base/TablePagination';
 import {  useCallback, useState } from "react";
+import { styled } from '@mui/system';
+import { observer } from 'mobx-react-lite';
+import { AxiosResponse } from 'axios';
+// Custom functional libraries
+import { asyncRequest } from "mobx-render-engine/utils/http";
+// Internal & 3rd party component libraries
+import TablePagination, { tablePaginationClasses as classes } from '@mui/base/TablePagination';
 import { Box, Button, Stack, Typography,  TextField, ButtonGroup, 
      IconButton, Autocomplete } from "@mui/material"
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import DownloadTwoToneIcon from '@mui/icons-material/DownloadTwoTone'
-import * as https from 'https';
-
-import { asyncRequest } from "../../utils/http";
+// Custom component libraries 
 import { ParameterInformation } from './remote-object-info-containers';
 import { RemoteObjectClientState } from './remote-object-client-state';
-import { observer } from 'mobx-react-lite';
-import { AxiosResponse } from 'axios';
 
 
 
@@ -75,14 +77,15 @@ export default function UnstyledTable(props : { rows : Array<any>, tree : string
             <tfoot>
                 <tr>
                     <CustomTablePagination
+                        // @ts-ignore
                         rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
                         count={props.rows.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         slotProps={{
                             actions: {
-                            showFirstButton: true,
-                            showLastButton: true,
+                                showFirstButton: true,
+                                showLastButton: true,
                             },
                         }}
                         onPageChange={handleChangePage}
@@ -114,6 +117,7 @@ const Root = styled('div')`
     }
 `;
 
+// @ts-ignore
 const CustomTablePagination = styled(TablePagination)`
     & .${classes.toolbar} {
         display: flex;
@@ -198,7 +202,7 @@ const PostmanFetcher = (props : any) => {
                 url: `/resources/postman-collection?domain_prefix=${postmanDomainPrefix}`,
                 method : 'GET',
                 baseURL : props.clientState.baseURL,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                // httpsAgent: new https.Agent({ rejectUnauthorized: false })
         }) as AxiosResponse
         if(response.status >= 200 && response.status <= 250) {
             let blob = new Blob([JSON.stringify(response.data.returnValue, null, 4)], {

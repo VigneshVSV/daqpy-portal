@@ -1,17 +1,14 @@
+// Internal & 3rd party functional libraries
 import  React, { useState, useCallback, MutableRefObject } from "react";
+// Custom functional libraries
+import { asyncRequest } from "mobx-render-engine/utils/http";
+import { StateManager } from "mobx-render-engine/state-manager";
+import { fetchFieldFromLocalStorage } from "mobx-render-engine/utils/misc";
+// Internal & 3rd party component libraries
 import NewWindow from "react-new-window";
-import { StyleSheetManager } from 'styled-components';
 import { Backdrop, Box, CircularProgress, IconButton, Stack, Typography } from "@mui/material"
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
-
-import { asyncRequest } from "../utils/http";
-import { StateManager } from "../mobx/state-manager";
-import { fetchFieldFromLocalStorage } from "../utils/misc";
-
-
-// src: https://stackoverflow.com/questions/47574490/open-a-component-in-new-window-on-a-click-in-react
-// you may also check: https://github.com/rmariuzzo/react-new-window/blob/main/src/NewWindow.js
-// for stylesheet copy see: https://github.com/JakeGinnivan/react-popout/issues/15
+// Custom component libraries 
 
 
 
@@ -192,9 +189,12 @@ export const LoadingBackdrop = ({ message, goBack } : ErrorBackdropProps) => {
 
 
 
-// https://stackoverflow.com/questions/63925086/styled-components-dynamic-css-is-not-generated-in-a-new-window
-// answer 3 did not work
 export const RenderInWindow = (props : any) => {
+    // src: https://stackoverflow.com/questions/47574490/open-a-component-in-new-window-on-a-click-in-react
+    // you may also check: https://github.com/rmariuzzo/react-new-window/blob/main/src/NewWindow.js
+    // for stylesheet copy see: https://github.com/JakeGinnivan/react-popout/issues/15
+    // https://stackoverflow.com/questions/63925086/styled-components-dynamic-css-is-not-generated-in-a-new-window
+    // answer 3 did not work
     const [showPopout, setShowPopout] = useState(true)
     const [newWindowNode, setNewWindowNode] = useState(null)
   
@@ -203,9 +203,9 @@ export const RenderInWindow = (props : any) => {
     return (
         <>
         {showPopout ? (
-                <StyleSheetManager 
-                    //@ts-ignore
-                    target={newWindowNode}>
+                // <StyleSheetManager 
+                //     //@ts-ignore
+                //     target={newWindowNode}>
                     <NewWindow
                         title="Title"
                         // features={{width: '960px', height: '600px'}}
@@ -215,7 +215,7 @@ export const RenderInWindow = (props : any) => {
                             {props.children}
                         </div>
                     </NewWindow>
-                </StyleSheetManager>
+                // </StyleSheetManager>
             ) : null}
         </>
     )
@@ -229,6 +229,7 @@ export const useDashboard = (dashboardURL : string, dashboardStateManager : Muta
         errorTraceback : string[],
         fetchData : any
     ] => {
+    
     const [loading, setLoading] = useState<boolean>(false)
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [errorTraceback, setErrorTraceback] = useState<string[]>([]) 
@@ -304,14 +305,13 @@ export const useAutoCompleteOptionsFromLocalStorage = (field : string) => {
 
 
 
-
 // https://github.com/CharlesStover/use-force-update
 const createNewObject = (): Record<string, never> => ({});
 
 export default function useForceUpdate(): [Record<string, never>, VoidFunction] {
-  const [useEffectDummyDependent, setValue] = useState<Record<string, never>>(createNewObject());
+    const [useEffectDummyDependent, setValue] = useState<Record<string, never>>(createNewObject());
 
-  return [useEffectDummyDependent, useCallback((): void => {
-    setValue(createNewObject());
-  }, [])]
+    return [useEffectDummyDependent, useCallback((): void => {
+        setValue(createNewObject());
+    }, [])]
 }

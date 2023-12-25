@@ -1,4 +1,8 @@
+// Internal & 3rd party functional libraries
 import {  useState, useRef, useCallback, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import { Box, Button, Stack, Tab, Tabs, Typography, TextField, Divider, IconButton, Autocomplete, 
     ButtonGroup, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
@@ -10,7 +14,8 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
-
+import NewWindow from "react-new-window";
+// Custom component libraries 
 import { EventInformation, MethodInformation, ParameterInformation, 
     ResourceInformation} from './remote-object-info-containers'
 import CustomizedTreeView from "./object-tree";
@@ -23,8 +28,8 @@ import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
 import { RemoteObjectClientState } from "./remote-object-client-state";
-import { observer } from "mobx-react-lite";
-import NewWindow from "react-new-window";
+
+
 
 
 

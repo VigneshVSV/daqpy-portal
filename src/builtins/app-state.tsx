@@ -1,4 +1,4 @@
-import { Logger } from "../utils/logger";
+import { Logger } from "mobx-render-engine/utils/logger";
 import { ApplicationState } from "../mobx/state-container"
 
 export const globalAppState = new ApplicationState({})

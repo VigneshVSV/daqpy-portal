@@ -1,7 +1,12 @@
+// Internal & 3rd party functional libraries
 import { useEffect, useState } from "react"
-import { StateManager } from "../mobx/state-manager"
+// Custom functional libraries
+import { StateManager } from "mobx-render-engine/state-manager"
+import { createStateManager } from "mui-mobx-render-engine/component-registration"
+// Internal & 3rd party component libraries
+// Custom component libraries 
 import { ErrorBackdrop, LoadingBackdrop } from "./reuse-components"
-import { createStateManager } from "./component-registration"
+
 
 
 export const DashboardView = ({ givenStateManager, setGlobalLocation, dashboardURL } : { givenStateManager : StateManager | null, 
@@ -18,6 +23,7 @@ export const DashboardView = ({ givenStateManager, setGlobalLocation, dashboardU
                     setGlobalLocation : setGlobalLocation,
                     setLocation : setGlobalLocation
                 })
+                // @ts-ignore
                 await sm.load(dashboardURL? dashboardURL : 'last-used')
                 console.log("re-rendering dashboard")
             }
@@ -29,10 +35,11 @@ export const DashboardView = ({ givenStateManager, setGlobalLocation, dashboardU
 
     return (
         <div>
-            { loading? <LoadingBackdrop 
-                            message="loading..." 
-                            goBack={() => setGlobalLocation('/')}
-                        /> : 
+            { loading? 
+                <LoadingBackdrop 
+                    message="loading..." 
+                    goBack={() => setGlobalLocation('/')}
+                /> : 
                 stateManager ? stateManager.renderer.Component('__App__') : 
                 <ErrorBackdrop
                     message='internal error - dashboard state manager was not properly loaded, cannot display dashboard'

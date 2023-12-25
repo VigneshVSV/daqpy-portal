@@ -1,10 +1,13 @@
+// Internal & 3rd party functional libraries
 import * as React from 'react';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, 
         Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Tooltip,
        } from '@mui/material';
 import { useLocation } from 'wouter';
-import { observer } from 'mobx-react-lite';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import SettingsEthernetTwoToneIcon from '@mui/icons-material/SettingsEthernetTwoTone';
 import TimelineTwoToneIcon from '@mui/icons-material/TimelineTwoTone';
@@ -13,11 +16,11 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SaveTwoToneIcon from '@mui/icons-material/SaveTwoTone';
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
-
+// Custom component libraries 
+import { StateManager } from 'mobx-render-engine/state-manager'
+import { createStateManager } from "mui-mobx-render-engine/component-registration"
 import { ApplicationState } from '../mobx/state-container';
 import { ErrorViewer, useAutoCompleteOptionsFromLocalStorage, useDashboard } from './reuse-components';
-import { createStateManager } from './component-registration';
-import { StateManager } from '../mobx/state-manager';
 
 
 

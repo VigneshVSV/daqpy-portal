@@ -1,8 +1,12 @@
+// Internal & 3rd party functional libraries
 import { useState } from "react";
+import { observer } from "mobx-react-lite";
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import { Button, Stack, ButtonGroup, Link } from "@mui/material"
+// Custom component libraries 
 import { EventInformation } from './remote-object-info-containers'
 import { RemoteObjectClientState } from "./remote-object-client-state";
-import { observer } from "mobx-react-lite";
 
 
 

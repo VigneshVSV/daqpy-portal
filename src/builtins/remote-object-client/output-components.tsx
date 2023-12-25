@@ -1,23 +1,26 @@
+// Internal & 3rd party functional libraries
 import {  useState, useEffect, useRef, MutableRefObject, useCallback } from "react";
+import { observer } from "mobx-react-lite";
+import { AxiosPromise, AxiosResponse } from "axios";
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import { Box, Button, FormControl, InputLabel, Select, Stack,
     Typography, MenuItem, ButtonGroup,  Divider, Checkbox, IconButton, Portal } from "@mui/material"
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Console, Hook, Unhook } from 'console-feed-optimized'
-import { observer } from "mobx-react-lite";
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
-import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
-
+import { Console, Hook, Unhook } from 'console-feed-optimized'
+// Custom component libraries 
 import { RemoteObjectInformation } from './remote-object-info-containers'
 import { ApplicationState } from "../../mobx/state-container";
-import { downloadJSON, openJSONinNewTab } from "../../utils/misc";
+import { downloadJSON, openJSONinNewTab } from "mobx-render-engine/utils/misc";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
-import { asyncRequest } from "../../utils/http";
+import { asyncRequest } from "mobx-render-engine/utils/http";
 import { RemoteObjectClientState } from "./remote-object-client-state";
 import { ErrorViewer, RenderInWindow } from "../reuse-components";
 import NewWindow from "react-new-window";
-import { AxiosPromise, AxiosResponse } from "axios";
+
 
 
 type UndockableConsoleProps = { 

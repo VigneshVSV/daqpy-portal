@@ -1,27 +1,23 @@
 // Internal & 3rd party functional libraries
-import './App.css';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import '../node_modules/react-grid-layout/css/styles.css'
-import '../node_modules/react-resizable/css/styles.css'
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 // Custom functional libraries
-
+import { StateManager } from "mobx-render-engine/state-manager";
 // Internal & 3rd party component libraries
-import { ThemeProvider } from '@mui/material';
-import { useRef, useState, useEffect } from 'react';
-// Custom component libraries
+import { ThemeProvider } from "@mui/material";
+import { useRef } from "react";
 import { Route, Router, useLocation, useRouter } from "wouter";
-import { theme } from './OverallTheme';
-import { SignIn } from './builtins/sign-in';
-import { Home } from './builtins/home';
-import { DashboardView } from './builtins/dashboard-view';
-import { globalAppState } from './builtins/app-state';
-import { UnsafeClient } from './builtins/remote-object-client/view';
-import { StateManager } from './mobx/state-manager';
 import { useLocationProperty, navigate } from "wouter/use-location";
-import isElectron from 'is-electron';
+import isElectron from "is-electron";
+// Custom component libraries
+import { theme } from "./OverallTheme";
+import { SignIn } from "./builtins/sign-in";
+import { Home } from "./builtins/home";
+import { DashboardView } from "./builtins/dashboard-view";
+import { globalAppState } from "./builtins/app-state";
+import { UnsafeClient } from "./builtins/remote-object-client/view";
 
 
 // returns the current hash location in a normalized form - (excluding the leading '#' symbol)
@@ -39,13 +35,10 @@ const useHashLocation = () => {
 const App = () => {
     
     const packagedApp = useRef<boolean>(isElectron()) 
-    // Module to control application life.
     const [location, setLocation] = useLocation()
     const dashboardStateManager = useRef<StateManager | null>(null)
     const dashboardURL = useRef<string>('')
     const globalRouter = useRouter()
-
-    console.log("isElectron", packagedApp.current)
 
     return (
         <div>
@@ -93,4 +86,4 @@ export default App;
 // Internal & 3rd party functional libraries
 // Custom functional libraries
 // Internal & 3rd party component libraries
-// Custom component libraries
+// Custom component libraries 

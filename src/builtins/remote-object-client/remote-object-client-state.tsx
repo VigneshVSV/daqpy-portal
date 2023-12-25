@@ -1,11 +1,15 @@
+// Internal & 3rd party functional libraries
 import { makeObservable, observable, action } from 'mobx';
-import * as https from 'https';
-
+import { AxiosResponse } from 'axios';
+// Custom functional libraries
+import { asyncRequest } from 'mobx-render-engine/utils/http';
+import { fetchFieldFromLocalStorage } from 'mobx-render-engine/utils/misc';
+// Internal & 3rd party component libraries
 import { EventInfo, EventInformation, MethodInfo, MethodInformation, ParameterInfo, 
     ParameterInformation, RemoteObjectInformation } from './remote-object-info-containers';
-import { asyncRequest } from '../../utils/http';
-import { fetchFieldFromLocalStorage } from '../../utils/misc';
-import { AxiosResponse } from 'axios';
+// Custom component libraries 
+
+
 
 
 export const emptyRemoteObjectInformation = new RemoteObjectInformation({
@@ -171,7 +175,7 @@ export class RemoteObjectClientState {
                 url : "/resources/gui", 
                 method : "get", 
                 baseURL : baseurl,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                // httpsAgent: new https.Agent({ rejectUnauthorized: false })
             }) as AxiosResponse
             if (response.status === 200) {
                 this.updateURLprefixes(baseurl)

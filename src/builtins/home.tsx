@@ -1,7 +1,9 @@
+// Internal & 3rd party functional libraries
 import { Route, Router, useLocation, useRouter } from "wouter";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import { Box, CssBaseline, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, styled, useTheme } from "@mui/material";
+// Custom functional libraries
+// Internal & 3rd party component libraries
+import { Box, CssBaseline, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, 
+    styled, useTheme, AppBar, Toolbar } from "@mui/material";
 import DashboardTwoToneIcon from '@mui/icons-material/DashboardTwoTone';
 import SettingsTwoToneIcon from '@mui/icons-material/SettingsTwoTone';
 import AccountTreeTwoToneIcon from '@mui/icons-material/AccountTreeTwoTone';
@@ -9,11 +11,12 @@ import TerminalTwoToneIcon from '@mui/icons-material/TerminalTwoTone';
 import TableChartTwoToneIcon from '@mui/icons-material/TableChartTwoTone';
 import ArticleTwoToneIcon from '@mui/icons-material/ArticleTwoTone';
 import LogoutTwoToneIcon from '@mui/icons-material/LogoutTwoTone';
+// Custom component libraries 
+import { ApplicationState } from "../mobx/state-container";
 import { AddPage, ShowPages} from './pages';
 import { AppSettings } from "./app-settings";
 import { BackendServerWizard } from "./http-server-wizard/view";
 import { RemoteObjectViewer } from "./remote-object-client/view";
-import { ApplicationState } from "../mobx/state-container";
 import { RemoteObjectClientState } from "./remote-object-client/remote-object-client-state";
 
 
