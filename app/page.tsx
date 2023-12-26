@@ -12,7 +12,6 @@ import isElectron from "is-electron";
 // Custom component libraries
 import { theme } from "./overall-theme";
 import { SignIn } from "./builtins/sign-in";
-import { DashboardView } from "./builtins/dashboard-view";
 import { globalAppState } from "./builtins/app-state";
 import { GlobalStateContext } from "./mobx/state-container";
 
@@ -21,9 +20,7 @@ import { GlobalStateContext } from "./mobx/state-container";
 export default function Home() {
     return (
         <ThemeProvider theme={theme}>      
-            <GlobalStateContext.Provider value={globalAppState}>
-                <SignIn />
-            </GlobalStateContext.Provider>
+            <SignIn globalState={globalAppState}/>      
         </ThemeProvider>
     )
 }

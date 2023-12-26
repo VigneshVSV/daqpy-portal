@@ -9,6 +9,7 @@ import { ActionDispatcher } from "mobx-render-engine/state-manager";
 import { Logger } from "mobx-render-engine/utils/logger";
 import { asyncRequest } from "mobx-render-engine/utils/http";
 import { timestamp, substringFromSlashedString } from "mobx-render-engine/utils/misc";
+import { useForceUpdate } from '../hooks'
 // Internal & 3rd party component libraries
 import { IconButton, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack, Typography, 
      Dialog, Slide, AppBar, Toolbar, DialogTitle, DialogContent, DialogContentText, 
@@ -19,10 +20,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import FileDownloadTwoToneIcon from '@mui/icons-material/FileDownloadTwoTone';
 // Custom component libraries 
-import { LogTable, useRendererLogColumns } from "./log-viewer/log-viewer";
-import UnstyledTable from "./remote-object-client/doc-viewer";
-import useForceUpdate, { ErrorViewer } from "./reuse-components";
-
+import { LogTable, useRendererLogColumns } from "../log-viewer/log-viewer";
+import UnstyledTable from "../remote-object-client/doc-viewer";
+import { ErrorViewer } from "../reuse-components";
 
 
 type DashboardUtilityProps = { 

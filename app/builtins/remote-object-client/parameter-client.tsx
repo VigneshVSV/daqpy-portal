@@ -5,7 +5,7 @@ import { AxiosRequestConfig, AxiosResponse } from "axios";
 // Custom functional libraries
 import { getFormattedTimestamp } from "mobx-render-engine/utils/misc";
 import { asyncRequest } from "mobx-render-engine/utils/http";
-import { createStateManager } from "mui-mobx-render-engine/component-registration";
+import { createHololinkedPortalStateManager } from "../app-state";
 import { StateManager, Action, BaseAction } from "mobx-render-engine/state-manager";
 // Internal & 3rd party component libraries
 import { Stack, Typography, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
@@ -526,7 +526,7 @@ const useMobXVisualization = (parameter : ParameterInformation, clientState : Re
         let shouldItRender = false
         let visualizationStateManager : StateManager | null = null
         if(parameter.visualization) {
-            visualizationStateManager = createStateManager(`${parameter.owner_instance_name}-${parameter.name}-visualization`)
+            // visualizationStateManager = createHololinkedPortalStateManager(`${parameter.owner_instance_name}-${parameter.name}-visualization`)
             // console.log("base url", props.clientState.baseURL)
             for(let key of Object.keys(parameter.visualization.actions)) {
                 if(!parameter.visualization.actions[key].URL.startsWith('http'))

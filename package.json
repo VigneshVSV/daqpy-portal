@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "install-possibly-outdated": "npm install console-feed-optimized"
+    "install-possibly-outdated": "npm install console-feed-optimized",
+    "uninstall-node-modules": "rmdir node_modules /s /q"
   },
   "dependencies": {
     "@ag-grid-community/react": "^31.0.1",
@@ -22,6 +23,7 @@
     "ag-grid-community": "^31.0.1",
     "axios": "^1.6.2",
     "console-feed-optimized": "^3.5.0",
+    "hololinked-dashboard-components": "H:\\New Work\\hololinked-dashboard-components\\dist",
     "idb": "^8.0.0",
     "is-electron": "^2.2.2",
     "loglevel": "^1.8.1",

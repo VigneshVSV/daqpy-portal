@@ -7,6 +7,7 @@ import axios, { AxiosResponse } from 'axios';
 import { asyncRequest } from 'mobx-render-engine/utils/http';
 import { ScriptImporterData, remoteObjectWizardData } from '../builtins/http-server-wizard/remote-object-wizard-data-container';
 import { ComponentState } from 'mobx-render-engine/state-container';
+import { StateManager } from 'mobx-render-engine/state-manager';
 // Internal & 3rd party component libraries
 // Custom component libraries
 
@@ -41,6 +42,30 @@ export type ApplicationSettings = {
         }
     }
 }
+
+export const defaultAppSettings = {
+    dashboards : {
+        deleteWithoutAsking : true,
+        showRecentlyUsed : true,
+    },
+    login : {
+        footer :  '',
+        footerLink  : '',
+        show :  true,
+    },
+    servers : {
+        allowHTTP : true,
+    },
+    remoteObjectViewer : {
+        console : {
+            stringifyOutput : false,
+            defaultMaxEntries : 10,
+            defaultWindowSize : 500,
+            defaultFontSize : 16,
+        }
+    }
+}
+
 
 export class PythonServer {
     hostname : string 
@@ -102,36 +127,17 @@ export class ApplicationState {
     loggedIn : boolean
     appsettings : any
     primaryHostServer : PythonServer | null 
-    additionalHostServers : string[]
+    additionalHostServers : PythonServer[] 
     servers  : Array<PythonServer>
-    HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData; };
+    HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData }
+    dashboardStateManager : StateManager | null
+    dashboardURL : string
 
     constructor(appData : ApplicationData) {
         this.loggedIn    = false
         this.primaryHostServer = null
         this.additionalHostServers = []
-        this.appsettings = {
-            dashboards : {
-                deleteWithoutAsking : true,
-                showRecentlyUsed : true,
-            },
-            login : {
-                footer :  '',
-                footerLink  : '',
-                show :  true,
-            },
-            servers : {
-                allowHTTP : true,
-            },
-            remoteObjectViewer : {
-                console : {
-                    stringifyOutput : false,
-                    defaultMaxEntries : 10,
-                    defaultWindowSize : 500,
-                    defaultFontSize : 16,
-                }
-            }
-        }
+        this.appsettings = defaultAppSettings
         this.servers = []
         this.HTTPServerWizardData = {
             remoteObjectWizardData : new remoteObjectWizardData({
@@ -146,13 +152,19 @@ export class ApplicationState {
                 successfulSteps : [false, false, false] 
             })
         }
+        this.dashboardStateManager = null
+        this.dashboardURL = ''
+
         makeObservable(this, {
                 loggedIn    : observable,
                 appsettings : observable,
+                dashboardStateManager : observable,
+                dashboardURL : observable,
                 setPrimaryHostServer : action,
                 updateSettings : action,
                 login       : action,
-                logout      : action
+                logout      : action,
+                setDashboard : action
             }
         )
     }
@@ -287,6 +299,11 @@ export class ApplicationState {
             })
         }
         return tree 
+    }
+
+    setDashboard(stateManager : StateManager, URL : string) {
+        this.dashboardStateManager = stateManager
+        this.dashboardURL = URL
     }
 }
 

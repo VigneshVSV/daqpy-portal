@@ -24,16 +24,16 @@ import { TabPanel } from "../reuse-components";
 import { ApplicationState } from "../../mobx/state-container";
 import { SelectedParameterWindow } from "./parameter-client";
 import { SelectedMethodWindow } from "./method-client";
-import { DashboardView } from "../dashboard-view";
+import { DashboardView } from "../dashboard/view";
 import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
 import { RemoteObjectClientState } from "./remote-object-client-state";
 
-
-
-
-
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 
 
 type RemoteObjectViewerProps = {

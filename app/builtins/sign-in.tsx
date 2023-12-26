@@ -1,11 +1,11 @@
 'use client'
 // Internal & 3rd party functional libraries
-import { useEffect, useState, useCallback, useRef, useContext } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation'
 // Custom functional libraries
-import { ApplicationState, GlobalStateContext } from '../mobx/state-container';
-import { createStateManager } from "mui-mobx-render-engine/component-registration";
+import { ApplicationState } from '../mobx/state-container';
+import { createHololinkedPortalStateManager } from "./app-state";
 import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, 
@@ -13,13 +13,12 @@ import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, D
        } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
-import { ErrorViewer } from './reuse-components';
+import { ErrorBackdrop, ErrorViewer } from './reuse-components';
 
 
 
 function Footer(props: any) {
-    const text = props.text
-    const link = props.link
+
     return (
         <Typography 
             variant="body1" 
@@ -29,23 +28,22 @@ function Footer(props: any) {
         >
             <Link 
                 color="inherit" 
-                onClick={() => window.open(link, '_blank')} 
+                onClick={() => window.open(props.link, '_blank')} 
                 underline="hover" 
                 sx={{ cursor:'pointer' }} 
                 rel="noopener noreferrer"
             >
-                    {text}
+                {props.text}
             </Link>
         </Typography>
-  );
+    )
 }
 
 
 
 
-export const SignIn = observer(() => {
+export const SignIn = observer(({ globalState } : {globalState : ApplicationState}) => {
 
-    const globalState = useContext(GlobalStateContext) as ApplicationState
     const router = useRouter()
 
     const [primaryHostServerAlive, setPrimaryHostServerAlive] = useState<boolean>(false)
@@ -215,7 +213,7 @@ export const SignIn = observer(() => {
                     </Grid>
                     <Grid item>
                         <Tooltip title='quick dashboard view'>
-                            <DashboardURLDialog /> 
+                            <DashboardURLDialog globalState={globalState}/> 
                         </Tooltip>
                     </Grid>
                     <Grid item>
@@ -246,29 +244,21 @@ export const SignIn = observer(() => {
 
 
 
-type DashboardURLDialogProps = {
-    open : boolean 
-    setOpen : any
-}
-
-const dashboardAutocompleteFieldInLocalStorage = 'DashboardURLDialogOptions'
-const DashboardURLDialog = () => {
+const DashboardURLDialog = observer(({ globalState } : {globalState : ApplicationState}) => {
 
     const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
-    const [autocompleteOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage(dashboardAutocompleteFieldInLocalStorage)
+    const [autocompleteOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('DashboardURLDialogOptions')
     const [open, setOpen] = useState<boolean>(false)
 
-    const [dashboardURLText, setDashboardURLText] = useState<string>(autocompleteOptions[0]? autocompleteOptions[0] : '')
+    const [dashboardURL, setDashboardURL] = useState<string>(autocompleteOptions[0]? autocompleteOptions[0] : '')
     const dashboardStateManager = useRef<any>(null)
-    const dashboardURL = useRef<string>('')
     const router = useRouter()
 
     const [fetchSuccessful, setFetchSuccessful] = useState<boolean>(true)    
-    const [loading, errorMessage, errorTraceback, fetchData] = useDashboard(dashboardURLText, dashboardStateManager)
+    const [loading, fetchData, errorMessage, errorTraceback] = useDashboard(dashboardURL, dashboardStateManager)
 
     const updateDashboardURL = (value : string) => {
-        setDashboardURLText(value)
-        dashboardURL.current = value
+        setDashboardURL(value)
     }
     const handleDashboardMenuClose = useCallback(() => {
         setOpen(false)
@@ -281,17 +271,18 @@ const DashboardURLDialog = () => {
     const openDashboard = useCallback(async () => {
         if(dashboardStateManager.current)
             dashboardStateManager.current.reset()
-        dashboardStateManager.current = createStateManager('quick-dashboard-view', 'INFO', {
+        dashboardStateManager.current = await createHololinkedPortalStateManager('quick-dashboard-view', 'INFO', ErrorBackdrop as any, {
             setGlobalLocation : router.push,
             setLocation : router.push
         })
         let path 
         let fetchSuccess = await fetchData()
         if(fetchSuccess)
-            path='/view'
+            path='/dashboard-view'
         else 
             path='/'
         setFetchSuccessful(fetchSuccess)
+        globalState.setDashboard(dashboardStateManager.current, dashboardURL)
         router.push(path)
     }, [fetchData, dashboardStateManager])
 
@@ -318,7 +309,7 @@ const DashboardURLDialog = () => {
                                 autoComplete    
                                 size="small"
                                 onChange={(event, name) => {updateDashboardURL(name as string)}}
-                                value={dashboardURLText}
+                                value={dashboardURL}
                                 options={autocompleteOptions}
                                 sx={{ flexGrow : 1, display: 'flex' }}
                                 renderInput={(params) => 
@@ -356,12 +347,12 @@ const DashboardURLDialog = () => {
                                     </li>
                                 )}
                             />
-                            <IconButton onClick={() => modifyOptions(dashboardURL.current, 'ADD')}>
+                            <IconButton onClick={() => modifyOptions(dashboardURL, 'ADD')}>
                                 <IconsMaterial.SaveTwoTone />
                             </IconButton>
                             <IconButton 
                                 id="remote-object-load-using-locator"
-                                onClick={() => window.open(dashboardURL.current)}
+                                onClick={() => window.open(dashboardURL)}
                                 sx = {{ borderRadius : 0 }}
                             >
                                 <IconsMaterial.OpenInNewTwoTone /> 
@@ -389,7 +380,7 @@ const DashboardURLDialog = () => {
                         </Stack>
                     </Stack> 
                 </DialogActions>
-        </Dialog>
+            </Dialog>
         </>
     )
-}
+})
