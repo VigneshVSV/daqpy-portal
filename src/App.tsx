@@ -1,96 +1,74 @@
 // Internal & 3rd party functional libraries
-import './App.css';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import '../node_modules/react-grid-layout/css/styles.css'
-import '../node_modules/react-resizable/css/styles.css'
-// Custom functional libraries
-
-// Internal & 3rd party component libraries
-import { ThemeProvider } from '@mui/material';
-import { useRef, useState, useEffect } from 'react';
-// Custom component libraries
+import { useRef } from 'react';
 import { Route, Router, useLocation, useRouter } from "wouter";
-import { theme } from './OverallTheme';
-import { SignIn } from './builtins/sign-in';
-import { Home } from './builtins/home';
-import { DashboardView } from './builtins/dashboard-view';
-import { globalAppState } from './builtins/app-state';
+// Custom functional libraries
+import { useHashLocation } from './utils/routing';
+// Internal & 3rd party component libraries
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import { Box, ThemeProvider } from "@mui/material";
+import isElectron from "is-electron";
+// Custom component libraries
+import { theme } from "./overall-theme";
+import { SignIn } from "./builtins/sign-in";
+import { globalAppState } from "./builtins/app-state";
+import { Overview } from './builtins/overview';
 import { UnsafeClient } from './builtins/remote-object-client/view';
-import { StateManager } from './mobx/state-manager';
-import { useLocationProperty, navigate } from "wouter/use-location";
-import isElectron from 'is-electron';
+import { DashboardView } from './builtins/dashboard/view';
+import { ErrorBackdrop } from './builtins/reuse-components';
 
-
-// returns the current hash location in a normalized form - (excluding the leading '#' symbol)
-// from wouter docs
-const hashLocation = () => window.location.hash.replace(/^#/, "") || "/";
-
-const hashNavigate = (to : string) => navigate("#" + to);
-
-const useHashLocation = () => {
-    const location = useLocationProperty(hashLocation);
-    return [location, hashNavigate];
-};
 
 
 const App = () => {
     
     const packagedApp = useRef<boolean>(isElectron()) 
-    // Module to control application life.
-    const [location, setLocation] = useLocation()
-    const dashboardStateManager = useRef<StateManager | null>(null)
-    const dashboardURL = useRef<string>('')
+    const [_, setLocation] = useLocation()
     const globalRouter = useRouter()
-
-    console.log("isElectron", packagedApp.current)
-
+    
+    globalAppState.setGlobalLocation = setLocation 
+    // not an observable, never make it observable otherwise this has to move to useEffect probably
+   
     return (
-        <div>
-            <ThemeProvider theme = {theme}>      
+        <Box id='main-layout' sx={{ display : 'flex', flexGrow : 1, alignItems : 'center'}}>
+            <ThemeProvider theme={theme}>      
                 <Router 
                     // @ts-ignore
                     hook={packagedApp.current ? useHashLocation : null}
                 >
                     <Route path='/'>
-                        <SignIn 
-                            globalState={globalAppState} 
-                            setGlobalLocation={setLocation} 
-                            dashboardStateManager={dashboardStateManager}
-                            dashboardURL={dashboardURL}
-                        />
+                        <SignIn globalState={globalAppState} />
                     </Route>
-                    <Home 
-                        base='/home' 
+                    <Overview
+                        baseRoute='/home' 
                         globalState={globalAppState} 
                         setGlobalLocation={setLocation} 
                         globalRouter={globalRouter} 
                     />
-                    <Route path='/view'>
-                        <DashboardView 
-                            givenStateManager={dashboardStateManager.current}
-                            setGlobalLocation={setLocation} 
-                            dashboardURL={dashboardURL.current}
-                        />   
+                    <Route path='/dashboard-view'>
+                        <DashboardView globalState={globalAppState} />   
                     </Route> 
                     <Route path='/dashboard/:name'>
-                        <div>Not Implemented Yet</div>  
+                        <ErrorBackdrop 
+                            message="404 - dashboard routing based on name not implemented yet" 
+                            goBack={() => setLocation('/')}
+                        />
                     </Route> 
-                    <Route path='/client/remote-object/unsafe'>
+                    <Route path='/clients/remote-object/unsafe'>
                         <UnsafeClient setGlobalLocation={setLocation} />
+                    </Route>
+                    <Route path='/clients/visualization/unsafe'>
+                        <ErrorBackdrop 
+                            message="404 - visualization client not implemented yet" 
+                            goBack={() => setLocation('/')}    
+                        />
                     </Route>
                 </Router>
             </ThemeProvider>
-        </div>
+        </Box>
     )
 }
 
 
-export default App;
-
-// Internal & 3rd party functional libraries
-// Custom functional libraries
-// Internal & 3rd party component libraries
-// Custom component libraries
+export default App

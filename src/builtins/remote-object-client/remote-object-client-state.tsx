@@ -1,11 +1,15 @@
+// Internal & 3rd party functional libraries
 import { makeObservable, observable, action } from 'mobx';
-import * as https from 'https';
-
+import axios, { AxiosResponse } from 'axios';
+// Custom functional libraries
+import { asyncRequest } from 'mobx-render-engine/utils/http';
+import { fetchFieldFromLocalStorage } from 'mobx-render-engine/utils/misc';
+// Internal & 3rd party component libraries
 import { EventInfo, EventInformation, MethodInfo, MethodInformation, ParameterInfo, 
     ParameterInformation, RemoteObjectInformation } from './remote-object-info-containers';
-import { asyncRequest } from '../../utils/http';
-import { fetchFieldFromLocalStorage } from '../../utils/misc';
-import { AxiosResponse } from 'axios';
+// Custom component libraries 
+
+
 
 
 export const emptyRemoteObjectInformation = new RemoteObjectInformation({
@@ -51,6 +55,20 @@ export class RemoteObjectClientState {
 
     constructor() {
 
+        this.remoteObjectInfo = emptyRemoteObjectInformation
+        this.fetchSuccessful = true 
+        this.remoteObjectState = ''
+        this.stringifyOutput = false 
+        this.showSettings = false
+        this.errorMessage = ''
+        this.errorTraceback = null 
+        this.hasError = false  
+        this.lastResponse = null 
+        this.eventSources = {}
+        this.baseURL = ''
+        this.domain = ''
+        this.existingRO_URLs = typeof window !== 'undefined'? fetchFieldFromLocalStorage('remote-object-locator-text-input', []) : []
+   
         makeObservable(this, {
             remoteObjectInfo : observable,
             fetchRemoteObjectInfo : action,
@@ -84,19 +102,6 @@ export class RemoteObjectClientState {
             addEventSource : action,
             removeEventSource : action
         })
-        this.remoteObjectInfo = emptyRemoteObjectInformation
-        this.fetchSuccessful = true 
-        this.remoteObjectState = ''
-        this.stringifyOutput = false 
-        this.showSettings = false
-        this.errorMessage = ''
-        this.errorTraceback = null 
-        this.hasError = false  
-        this.lastResponse = null 
-        this.eventSources = {}
-        this.baseURL = ''
-        this.domain = ''
-        this.existingRO_URLs = fetchFieldFromLocalStorage('remote-object-locator-text-input', [])
     }
 
 
@@ -167,11 +172,11 @@ export class RemoteObjectClientState {
 
         try {
             let baseurl = arg ? arg : this.baseURL
-            const response = await asyncRequest({
+            const response = await axios({
                 url : "/resources/gui", 
                 method : "get", 
                 baseURL : baseurl,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                // httpsAgent: new https.Agent({ rejectUnauthorized: false })
             }) as AxiosResponse
             if (response.status === 200) {
                 this.updateURLprefixes(baseurl)
@@ -193,7 +198,7 @@ export class RemoteObjectClientState {
                 this.setFetchSuccessful(true)
                 this.resetError()
             }
-            else if(response.data.exception) {
+            else if(response.data && response.data.exception) {
                 this.setFetchSuccessful(false)
                 this.setError(response.data.exception.message, response.data.exception.traceback)
                 if(this.stringifyOutput)

@@ -1,18 +1,22 @@
-import { Box, Button, ButtonGroup, Divider, IconButton, Stack, Typography } from "@mui/material"
+// Internal & 3rd party functional libraries
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// Custom functional libraries
+// Internal & 3rd party component libraries
+import { Box, Button, ButtonGroup, IconButton, Stack, Typography } from "@mui/material"
 import PushPinTwoToneIcon from '@mui/icons-material/PushPinTwoTone';
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from '@ag-grid-community/react';
-
+import { ObjectInspector } from "react-inspector";
+// import { ModuleRegistry } from '@ag-grid-community/core';
+// import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-alpine.css';
 import '@ag-grid-community/styles/ag-theme-material.css'
 import './styles.css'
+// Custom component libraries 
 
-import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
-import { ObjectInspector } from "react-inspector";
-ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
+
+// ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
 
 
 

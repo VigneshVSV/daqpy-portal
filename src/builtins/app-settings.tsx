@@ -1,20 +1,26 @@
-import { Grid, Typography, Toolbar, FormControlLabel, Switch, Divider, TextField, Box, 
-    OutlinedInput, InputAdornment, IconButton, Button, FormGroup, Stack } from "@mui/material"
+// Internal & 3rd party functional libraries
+import { useState } from "react";
+import { observer } from "mobx-react-lite";
+// Custom functional libraries
+import { AppState } from "./app-state";
+// Internal & 3rd party component libraries
+import { Grid, Typography, FormControlLabel, Switch, Divider, Box, 
+    OutlinedInput, InputAdornment, IconButton, Stack } from "@mui/material"
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DoneOutlineTwoToneIcon from '@mui/icons-material/DoneOutlineTwoTone';
-import { withStyles } from "@mui/styles";
-import { observer } from "mobx-react-lite";
-import { AppState } from "./app-state";
-import { useState } from "react";
+// Custom component libraries 
 
+export const OutlinedInputIconButton = ({ children } : any) => {
+    // borderRadius : 4,
+    // borderTopRightRadius: 0,
+    // borderBottomRightRadius: 0,
 
-export const OutlinedInputIconButton = withStyles({
-    root: {
-        borderRadius : 4,
-        borderTopRightRadius: 0,
-        borderBottomRightRadius: 0,
-    }
-  })(IconButton);
+    return (
+        <IconButton>
+            {children}
+        </IconButton>
+    )
+}
   
 
 export const SettingsTitle = (props : any) => {

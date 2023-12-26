@@ -1,4 +1,8 @@
+// Internal & 3rd party functional libraries
 import {  useState, useRef, useCallback, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+// Custom functional libraries
+// Internal & 3rd party component libraries
 import { Box, Button, Stack, Tab, Tabs, Typography, TextField, Divider, IconButton, Autocomplete, 
     ButtonGroup, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import ArrowBackTwoToneIcon from '@mui/icons-material/ArrowBackTwoTone';
@@ -10,24 +14,25 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import CopyAllTwoToneIcon from '@mui/icons-material/CopyAllTwoTone';
-
+import NewWindow from "react-new-window";
+// Custom component libraries 
 import { EventInformation, MethodInformation, ParameterInformation, 
     ResourceInformation} from './remote-object-info-containers'
 import CustomizedTreeView from "./object-tree";
-import { TabPanel } from "../reuse-components";
+import { ErrorBackdrop, TabPanel } from "../reuse-components";
 import { ApplicationState } from "../../mobx/state-container";
 import { SelectedParameterWindow } from "./parameter-client";
 import { SelectedMethodWindow } from "./method-client";
-import { DashboardView } from "../dashboard-view";
+import { DashboardView } from "../dashboard/view";
 import { SelectedEventWindow } from "./events-client";
 import { ErrorBoundary, LiveLogViewer, ResponseLogs, UndockableConsole } from "./output-components";
 import { ClassDocWindow } from "./doc-viewer";
 import { RemoteObjectClientState } from "./remote-object-client-state";
-import { observer } from "mobx-react-lite";
-import NewWindow from "react-new-window";
 
-
-
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
 
 
 type RemoteObjectViewerProps = {
@@ -600,15 +605,23 @@ export const UnsafeClient = (props : UnsafeClientProps) => {
     const clientState = useRef<RemoteObjectClientState>(new RemoteObjectClientState())
 
     return (     
-        <Box sx={{pt : 3, display : 'flex', flexGrow : 1, pb : 5}}> 
+        <Box 
+            id='remote-object-viewer-unsafe-client-layout-box' 
+            sx={{pt : 3, display : 'flex', flexGrow : 1, pb : 5}}
+        > 
             {!showSettings? 
                 <RemoteObjectViewer
-                // @ts-ignore
+                    // @ts-ignore
                     globalState={dummyGlobalState.current}
                     setGlobalLocation={props.setGlobalLocation}
                     clientState={clientState.current}
                     unsafeClient={true}
-                /> : <Typography>Settings</Typography>}
+                /> : 
+                <ErrorBackdrop 
+                    message="settings panel for unsafe client not implement yet"
+                    goBack={() => setShowSettings(false)}    
+                />
+            }
         </Box>
     )
 }

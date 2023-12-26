@@ -1,4 +1,8 @@
-import { ActionInfo } from '../../mobx/stub-evaluator'
+// Internal & 3rd party functional libraries
+// Custom functional libraries
+import { ActionInfo } from 'mobx-render-engine/stub-evaluator'
+// Internal & 3rd party component libraries
+// Custom component libraries 
 
 // This file mostly follows python naming conventions - PEP8 - because this information is loaded from 
 // python side

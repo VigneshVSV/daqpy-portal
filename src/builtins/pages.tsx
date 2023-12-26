@@ -1,15 +1,21 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, CircularProgress, FormControl, FormControlLabel, Grid, IconButton, InputAdornment, Link, OutlinedInput, Paper, TextField, Toolbar, Tooltip, Typography } from "@mui/material"
-import Container from '@mui/material/Container';
+'use client'
+// Internal & 3rd party functional libraries
 import { useEffect, useState } from "react";
-import { asyncRequest } from "../utils/http";
+import { AxiosResponse } from "axios";
+// Custom functional libraries
+import { asyncRequest } from "mobx-render-engine/utils/http";
+// Internal & 3rd party component libraries
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, CircularProgress, Container,
+    FormControl, FormControlLabel, Grid, IconButton, InputAdornment, Link, OutlinedInput, Paper, 
+    TextField, Toolbar, Tooltip, Typography } from "@mui/material"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
 import OpenInNewOffTwoToneIcon from '@mui/icons-material/OpenInNewOffTwoTone';
 import LaunchTwoToneIcon from '@mui/icons-material/LaunchTwoTone';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
+// Custom component libraries 
 import { RootLogger } from "./app-state"
-import { AxiosResponse } from "axios";
 
 
 
@@ -17,7 +23,7 @@ export const AddPage = (props : any) => {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [URL, setURL] = useState('http://localhost:8080/pages/medsch10')
+    const [URL, setURL] = useState('http://localhost:8080/pages/sample')
 
     const onSaveAndOpen = (event : any) => {
         RootLogger.logTraceMessage("AddPage", "unknown", "Save and Open not implemented yet")
@@ -69,7 +75,7 @@ export const AddPage = (props : any) => {
                                 variant="outlined" 
                                 fullWidth    
                                 placeholder = "Enter URL of UI components server"
-                                defaultValue="http://localhost:8080/pages/medsch10"
+                                defaultValue="http://localhost:8080/pages/sample"
                                 onChange={(event) => setURL(event.target.value)}
                             />
                         </Grid>

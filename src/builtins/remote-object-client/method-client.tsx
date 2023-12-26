@@ -1,24 +1,24 @@
+// Internal & 3rd party functional libraries
 import { useCallback, useEffect, useState } from "react";
-import { MethodInformation } from "./remote-object-info-containers";
+import { AxiosResponse } from "axios";
+// Custom functional libraries
+import { getFormattedTimestamp } from "mobx-render-engine/utils/misc";
+import { asyncRequest } from "mobx-render-engine/utils/http";
+// Internal & 3rd party component libraries
 import { Stack, Divider, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
-            RadioGroup, Box, Chip, Radio, useTheme, TextField, Link, Checkbox, Autocomplete} from "@mui/material";
-import * as https from 'https';
-// import DownloadIcon from '@mui/icons-material/Download';
-
+    RadioGroup, Box, Radio, useTheme, TextField, Link, Checkbox, Autocomplete} from "@mui/material";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
 import "ace-builds/src-noconflict/ext-language_tools";
-
+// Custom component libraries 
+import { MethodInformation } from "./remote-object-info-containers";
 import { TabPanel } from "../reuse-components";
-import { getFormattedTimestamp } from "../../utils/misc";
-import { asyncRequest } from "../../utils/http";
 import UnstyledTable from "./doc-viewer";
 import { DocRowTitle } from "./parameter-client";
 import { RemoteObjectClientState } from "./remote-object-client-state";
-import { AxiosResponse } from "axios";
-
-
+    
+    
 
 type SelectedMethodWindowProps = {
     method : MethodInformation
@@ -135,7 +135,7 @@ export const MethodExecutionClient = (props : MethodExecutionProps) => {
                 method : props.method.scada_info.http_method[0] as any, 
                 data : data, 
                 baseURL : props.clientState.domain,
-                httpsAgent: new https.Agent({ rejectUnauthorized: false })
+                // httpsAgent: new https.Agent({ rejectUnauthorized: false })
             }) as AxiosResponse
             let executionTime = Date.now() - requestTime_
             props.clientState.setLastResponse(response)
