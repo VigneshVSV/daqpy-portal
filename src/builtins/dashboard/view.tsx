@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 // Custom functional libraries
-import { StateManager } from "mobx-render-engine/state-manager"
+import { StateManager } from "@hololinked/mobx-render-engine/state-manager"
 import { ApplicationState } from "../../mobx/state-container"
 import { createHololinkedPortalStateManager } from "../app-state"
 // Internal & 3rd party component libraries

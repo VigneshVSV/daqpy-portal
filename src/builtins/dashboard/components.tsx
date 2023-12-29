@@ -4,10 +4,10 @@ import { AxiosResponse } from "axios";
 import { ObjectInspector } from "react-inspector";
 import { observer } from "mobx-react-lite";
 // Custom functional libraries
-import { ActionDispatcher } from "mobx-render-engine/state-manager";
-import { Logger } from "mobx-render-engine/utils/logger";
-import { asyncRequest } from "mobx-render-engine/utils/http";
-import { timestamp, substringFromSlashedString } from "mobx-render-engine/utils/misc";
+import { ActionDispatcher } from "@hololinked/mobx-render-engine/state-manager";
+import { Logger } from "@hololinked/mobx-render-engine/utils/logger";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
+import { timestamp, substringFromSlashedString } from "@hololinked/mobx-render-engine/utils/misc";
 import { useForceUpdate } from '../hooks'
 // Internal & 3rd party component libraries
 import { IconButton, SpeedDial, SpeedDialAction, SpeedDialIcon, Stack, Typography, 

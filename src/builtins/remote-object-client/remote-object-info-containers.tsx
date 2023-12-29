@@ -1,6 +1,6 @@
 // Internal & 3rd party functional libraries
 // Custom functional libraries
-import { ActionInfo } from 'mobx-render-engine/stub-evaluator'
+import { ActionInfo } from '@hololinked/mobx-render-engine/stub-evaluator'
 // Internal & 3rd party component libraries
 // Custom component libraries 
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AxiosResponse } from "axios";
 // Custom functional libraries
-import { asyncRequest } from "mobx-render-engine/utils/http";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 // Internal & 3rd party component libraries
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, CircularProgress, Container,
     FormControl, FormControlLabel, Grid, IconButton, InputAdornment, Link, OutlinedInput, Paper, 

@@ -12,7 +12,7 @@ import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, D
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
-import { useRouter } from 'wouter';
+
 
 
 
@@ -43,8 +43,6 @@ function Footer(props: any) {
 
 export const SignIn = observer(({ globalState } : { globalState : ApplicationState}) => {
 
-    const router = useRouter()
-
     const [primaryHostServerAlive, setPrimaryHostServerAlive] = useState<boolean>(false)
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
@@ -74,7 +72,7 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
             setLoginDisabled(loginDisabled)
             setErrorMessage(errMsg)
         }
-        // updateGlobalState()
+        updateGlobalState()
     }, [])
   
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -250,8 +248,7 @@ const DashboardURLDialog = observer(({ globalState } : {globalState : Applicatio
 
     const [dashboardURL, setDashboardURL] = useState<string>(autocompleteOptions[0]? autocompleteOptions[0] : '')
     const dashboardStateManager = useRef<any>(null)
-    const router = useRouter()
-
+    
     const [fetchSuccessful, setFetchSuccessful] = useState<boolean>(true)    
     const [loading, fetchData, errorMessage, errorTraceback] = useDashboard(dashboardURL, dashboardStateManager)
 

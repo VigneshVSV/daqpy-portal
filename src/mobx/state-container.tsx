@@ -4,10 +4,10 @@ import { createContext } from 'react';
 import { makeObservable, observable, action } from 'mobx';
 import axios, { AxiosResponse } from 'axios';
 // custom functional libraries
-import { asyncRequest } from 'mobx-render-engine/utils/http';
+import { asyncRequest } from '@hololinked/mobx-render-engine/utils/http';
 import { ScriptImporterData, remoteObjectWizardData } from '../builtins/http-server-wizard/remote-object-wizard-data-container';
-import { ComponentState } from 'mobx-render-engine/state-container';
-import { StateManager } from 'mobx-render-engine/state-manager';
+import { ComponentState } from '@hololinked/mobx-render-engine/state-container';
+import { StateManager } from '@hololinked/mobx-render-engine/state-manager';
 // Internal & 3rd party component libraries
 // Custom component libraries
 

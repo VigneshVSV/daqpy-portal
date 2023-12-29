@@ -14,9 +14,9 @@ import { Console, Hook, Unhook } from 'console-feed-optimized'
 // Custom component libraries 
 import { RemoteObjectInformation } from './remote-object-info-containers'
 import { ApplicationState } from "../../mobx/state-container";
-import { downloadJSON, openJSONinNewTab } from "mobx-render-engine/utils/misc";
+import { downloadJSON, openJSONinNewTab } from "@hololinked/mobx-render-engine/utils/misc";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
-import { asyncRequest } from "mobx-render-engine/utils/http";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 import { RemoteObjectClientState } from "./remote-object-client-state";
 import { ErrorViewer, RenderInWindow } from "../reuse-components";
 import NewWindow from "react-new-window";

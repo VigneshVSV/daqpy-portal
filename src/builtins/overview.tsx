@@ -1,15 +1,15 @@
 // Internal & 3rd party functional libraries
-import { Route, useLocation, useRouter } from "wouter";
+import { Route, Router, useLocation, useRouter } from "wouter";
 // Custom functional libraries
 // Internal & 3rd party component libraries
-import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, 
+import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
     useTheme, AppBar, Toolbar } from "@mui/material";
 import * as IconsMaterial from '@mui/icons-material/';
-// Custom component libraries 
+// Custom component libraries
 import { ApplicationState } from "../mobx/state-container";
 import { AddPage, ShowPages} from './pages';
 import { AppSettings } from "./app-settings";
-import { BackendServerWizard } from "./http-server-wizard/view";
+import { ServerWizard } from "./http-server-wizard/view";
 import { RemoteObjectViewer } from "./remote-object-client/view";
 import { RemoteObjectClientState } from "./remote-object-client/remote-object-client-state";
 
@@ -27,11 +27,11 @@ import { RemoteObjectClientState } from "./remote-object-client/remote-object-cl
 const DrawerTitle = (props : any) => {
     const theme = useTheme()
     return (
-        <List>           
-            <ListItemText 
-                primary={props.text} 
+        <List>
+            <ListItemText
+                primary={props.text}
                 primaryTypographyProps={{
-                    noWrap : true, 
+                    noWrap : true,
                     variant : 'overline',
                     fontSize : 15,
                     paddingLeft : 2,
@@ -45,20 +45,23 @@ const DrawerTitle = (props : any) => {
 
 const DrawerGroup = (props : any) => {
 
+    const [_, setLocation] = useLocation()
+
     return (
         <List>
             {props.content.map((contentInfo : any) => (
                 <ListItem key={contentInfo.text} disablePadding>
-                    <ListItemButton 
+                    <ListItemButton
                         sx = {{
                             '&:hover': { backgroundColor : '#EAF7FE'}
-                        }} 
-                        // onClick={() => {contentInfo.globalPath? props.setGlobalLocation(contentInfo.path) : setLocation(contentInfo.path)}}
-                    > 
+                        }}
+                        onClick={() => {contentInfo.globalPath?
+                            props.setGlobalLocation(contentInfo.path) : setLocation(contentInfo.path)}}
+                    >
                         <ListItemIcon sx = {{
                             '&:hover': {
                             backgroundColor : '#EAF7FE'
-                            }}}  
+                            }}}
                         >
                                 {contentInfo.icon}
                         </ListItemIcon>
@@ -77,7 +80,8 @@ const Panels : any = {
             text : 'Pages',
             icon : <IconsMaterial.DashboardTwoTone />,
             path : '/pages'
-    }],
+        }
+    ],
     'App' : [
         {
             text : 'Settings',
@@ -88,7 +92,7 @@ const Panels : any = {
             text : 'Log Viewer',
             icon : <IconsMaterial.TableChartTwoTone />,
             path : '/log-viewer'
-    }], 
+    }],
     'Python Servers' : [
         {
             text: 'HTTP Server Wizard',
@@ -96,7 +100,7 @@ const Panels : any = {
             path: '/servers'
         },
         {
-            text: 'Remote Object Wizard',   
+            text: 'Remote Object Wizard',
             icon: <IconsMaterial.TerminalTwoTone />,
             path: '/objects'
     }],
@@ -113,7 +117,7 @@ const Panels : any = {
             path : '/login-info'
     }]
 }
-  
+
 
 // const styles = (theme : any) => ({
 //     // Load app bar information from the theme
@@ -131,7 +135,7 @@ type OverviewProps = {
 
 const drawerWidth = 300
 
-export const Overview = ( { baseRoute, globalState, setGlobalLocation, globalRouter} : OverviewProps ) => {
+export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRouter} : OverviewProps ) => {
     const router = useRouter();
     const nestedBaseRoute = `${router.base}${baseRoute}`;
     const [parentLocation] = useLocation()
@@ -139,49 +143,36 @@ export const Overview = ( { baseRoute, globalState, setGlobalLocation, globalRou
     if (!parentLocation.startsWith(nestedBaseRoute)) return null;
 
     return (
-        <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <AppBar 
-                position="fixed"
-                color = "inherit"
-                elevation = {2}
-                sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            >
-                <Toolbar>                
-                </Toolbar>
-            </AppBar>
-            <Drawer
-                variant   = "permanent"
-                anchor    = "left"
-                sx = {{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
+        <Router base={nestedBaseRoute} key={nestedBaseRoute}>
+            <Box sx={{ display : 'flex', flexGrow : 1 }}>
+                <CssBaseline />
+                <Drawer
+                    variant="permanent"
+                    anchor="left"
+                    sx={{
                         width: drawerWidth,
-                        boxSizing: 'border-box',
-                    },
-                }}
-            >
-                <Toolbar />
-                {Object.keys(Panels).map((group, index)=> {
-                    let info = Panels[group]
-                    return (
-                        <div key = {index}>
-                            <DrawerTitle text={group}></DrawerTitle>
-                            <DrawerGroup content={info} setGlobalLocation={setGlobalLocation}></DrawerGroup>
-                        </div>
-                    )
-                }
-                )}
-            </Drawer>
-            <Box
-                component="main"
-                sx={{ flexGrow: 1, p: 3, alignItems : 'center' }}
-            >
-                <Toolbar /> 
+                        flexShrink: 0,
+                        '& .MuiDrawer-paper': {
+                            width: drawerWidth,
+                            boxSizing: 'border-box',
+                        },
+                    }}
+                >
+                    {Object.keys(Panels).map((group, index)=> {
+                        let info = Panels[group]
+                        return (
+                            <div key={index}>
+                                <DrawerTitle text={group}></DrawerTitle>
+                                <DrawerGroup content={info} setGlobalLocation={setGlobalLocation}></DrawerGroup>
+                            </div>
+                        )
+                    }
+                    )}
+                </Drawer>
                 <Box
+                    id='overview-components-area'
                     component="main"
-                    sx={{ flexGrow: 1, alignItems : 'center' }}
+                    sx={{ display : 'flex', flexGrow : 1, p : 3 }}
                 >
                     <Route path='/pages/add'>
                         <AddPage setGlobalLocation={setGlobalLocation}></AddPage>
@@ -193,12 +184,12 @@ export const Overview = ( { baseRoute, globalState, setGlobalLocation, globalRou
                         <AppSettings globalState={globalState}></AppSettings>
                     </Route>
                     <Route path='/servers'>
-                        <BackendServerWizard globalState={globalState}></BackendServerWizard>
+                        <ServerWizard globalState={globalState}></ServerWizard>
                     </Route>
                     <Route path='/objects'>
-                        <RemoteObjectViewer 
-                            globalState={globalState} 
-                            unsafeClient={false} 
+                        <RemoteObjectViewer
+                            globalState={globalState}
+                            unsafeClient={false}
                             clientState={new RemoteObjectClientState()}
                             // showSettings={false}
                             // setShowSettings={null}
@@ -207,7 +198,7 @@ export const Overview = ( { baseRoute, globalState, setGlobalLocation, globalRou
                     </Route>
                 </Box>
             </Box>
-        </Box>
+        </Router>
     )
 }
 

@@ -1,253 +1,188 @@
 // Internal & 3rd party functional libraries
-import React, { ChangeEvent, useEffect, useState, useRef } from "react";
+import { createContext, useEffect, useState, useRef, useMemo, useContext } from "react";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 // Custom functional libraries
-import { asyncRequest } from "mobx-render-engine/utils/http";
-import { ParseJSONString } from "mobx-render-engine/utils/misc";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
+import { ParseJSONString } from "@hololinked/mobx-render-engine/utils/misc";
+import { AppState } from "../app-state";
+import { ApplicationState, PythonServer } from "../../mobx/state-container";
+import { ParameterInfo, ParameterInformation } from "../remote-object-client/remote-object-info-containers";
+import { ScriptImporterData } from "./remote-object-wizard-data-container";
 // Internal & 3rd party component libraries
 import { Box, Button, FormControl, Stack, Tab, Tabs,  Typography, Autocomplete, TextField, MobileStepper, 
     useTheme, Stepper, Step, StepLabel, FormControlLabel, Checkbox, RadioGroup, Radio, 
     Container, Chip, Divider, } from "@mui/material"
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import * as IconsMaterial from '@mui/icons-material'
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-crimson_editor"
 import "ace-builds/src-noconflict/ext-language_tools";
 // Custom component libraries 
-import { AppState } from "../app-state";
-import { ApplicationState, PythonServer } from "../../mobx/state-container";
-import { ParameterInfo, ParameterInformation } from "../remote-object-client/remote-object-info-containers";
-import { ScriptImporterData } from "./remote-object-wizard-data-container";
-import { ErrorViewer } from "../reuse-components";
+import { ErrorViewer, TabPanel } from "../reuse-components";
 
 
+type ServerWizardProps = {
+    setErrorMessage : Function, 
+    setErrorTraceback : Function, 
+    currentServer : PythonServer | null  
+}
+
+const ServerWizardContext = createContext<ServerWizardProps | null>(null)
 
 
-export const BackendServerWizard = ({ globalState } : AppState) => {
+// observer ? 
+const tabFields = ['Status', 'New Eventloop', 'New Remote Object', 'New HTTP Server']
+export const ServerWizard = ({ globalState } : AppState) => {
 
-    const [server, setServer] = useState<PythonServer>(globalState.servers[0]);
-    const [serverData, setServerData] = useState({})
-    
-    const handleChange = (server : string) => {
+    const [server, setServer] = useState<PythonServer | null>(globalState.servers[0]? globalState.servers[0] : null);
+       
+    const handleServerChange = (server : string) => {
         for(let server_ of globalState.servers){
             if(server === server_.qualifiedIP)
                 setServer(server_);
         }
-    };
+    }
 
+    const [errorMessage, setErrorMessage] = useState<string>('')
+    const [errorTraceback, setErrorTraceback] = useState<Array<string>>([])
+    const [tab, setTab] = useState(0);
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+        setTab(newValue);
+    };
+    
     return (
-        <div>
-            <Stack id="http-servers-select-box" direction="row" spacing={10} sx={{pl : 2, pr :2}}>
-                <Box sx={{flexGrow : 0.5, display: 'flex'}} >
-                    <Autocomplete
-                        id="http-servers-select-autocomplete"
-                        disablePortal
-                        autoComplete    
-                        onChange={(event, server) => handleChange(server as string) }
-                        defaultValue={server.qualifiedIP}
-                        options={globalState.servers.map((value : PythonServer) => {return value.qualifiedIP})}
-                        sx={{ flexGrow : 1, display: 'flex'}}
-                        renderInput={(params) => 
-                            <TextField {...params} 
-                                variant="standard"
-                                helperText="choose server" 
-                                size="small"
-                            />}
-                    />
-                </Box>
+        <Stack id='server-wizard-stack' direction="row" sx={{ flexGrow: 0.6, display: 'flex', alignItems : 'center'}}>
+            <Tabs
+                id='server-wizard-options-tabs'
+                orientation="vertical"
+                variant="scrollable"
+                value={tab}
+                onChange={handleTabChange}
+                sx={{ borderRight: 2, borderColor: 'divider', height : '100%' }}
+            >
+                {tabFields.map((name : string) => 
+                    <Tab label={name} id={name} sx={{ minWidth: 150}} key={name}/>
+                )}
+            </Tabs>
+            <Stack sx={{ flexGrow: 1, display: 'flex', pl : 3 }}>
+                <Autocomplete
+                    id="http-servers-select-autocomplete"
+                    disablePortal
+                    autoComplete    
+                    onChange={(_, server) => handleServerChange(server as string) }
+                    defaultValue={server? server.qualifiedIP : ''}
+                    options={globalState.servers.map((value : PythonServer) => value.qualifiedIP)}
+                    sx={{ flexGrow : 1, display: 'flex', pb : 5 }}
+                    renderInput={(params) => 
+                        <TextField 
+                            variant="standard"
+                            helperText="choose server" 
+                            sx={{ flexGrow : 1, display: 'flex'}}
+                            {...params} 
+                        />}
+                />
+                {tabFields.map((name : string, index : number) => 
+                    <TabPanel 
+                        tree={'server-wizard-'+name}
+                        value={tab} 
+                        index={index} 
+                        key={name+index.toString()}
+                    >
+                        <ServerWizardContext.Provider 
+                            value={{
+                                    currentServer : server,
+                                    setErrorMessage : setErrorMessage,
+                                    setErrorTraceback : setErrorTraceback
+                                }}
+                        >
+                            <VerticalTabComponents name={name} />
+                        </ServerWizardContext.Provider>
+                    </TabPanel>
+                )}
+                <Divider light sx={{ pt : 2 }}>ERRORS IF ANY APPEAR BELOW</Divider>
+                <ErrorViewer 
+                    errorMessage={errorMessage} 
+                    errorTraceback={errorTraceback}
+                />                    
             </Stack>
-            <VerticalTabs currentServer={server} globalState={globalState}></VerticalTabs>
-        </div>
+        </Stack>
     )
 }
 
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-  }
 
-
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index, ...other } = props;
-  
-    return (
-        <div
-            role="tabpanel"
-            hidden ={value !== index}
-            id ={`vertical-tabpanel-${index}`}
-            {...other}
-            style={{
-                "width" : "100%"
-            }}      
-        >
-            {value === index && (
-                <Box sx={{ pl: 3, flexGrow: 1, display: 'flex' }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
-}
-  
-
-type VerticalTabsProps = { 
-    currentServer : PythonServer,
-    globalState : ApplicationState
-}
-
-export default function VerticalTabs( { currentServer, globalState } : VerticalTabsProps  ) {
-
-    const fields = ['Status', 'New Eventloop', 'New Device', 'New HTTP Server']
-    const [errorMessage, setErrorMessage] = useState<string>('')
-    const [errorTraceback, setErrorTraceback] = useState<Array<string>>([])
-    
-    const [value, setValue] = React.useState(0);
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-      setValue(newValue);
-    };
-  
-    return (
-        <Box
-            id ="vertical-tabs-fields"
-            sx={{ flexGrow: 1, display: 'flex', pt : 5}}
-        >
-            <Stack direction="row" sx={{ flexGrow: 1, display: 'flex'}}>
-                <Tabs
-                    orientation="vertical"
-                    variant="scrollable"
-                    value={value}
-                    onChange={handleChange}
-                    sx={{ borderRight: 2, borderColor: 'divider' }}
-                    >
-                    {fields.map((name : string) => 
-                        <Tab label={name} id={name} sx={{ maxWidth: 150}} key={name}/>
-                    )}
-                </Tabs>
-                <Stack sx={{ flexGrow: 1, display: 'flex', pl : 3 }}>
-                    {fields.map((name : string, index : number) => 
-                        <TabPanel value={value} index={index} key={name+index.toString()}>
-                            <VerticalTabComponents 
-                                name={name} 
-                                currentServer={currentServer}
-                                globalState={globalState} 
-                                setErrorMessage={setErrorMessage}
-                                setErrorTraceback={setErrorTraceback}
-                                />
-                        </TabPanel>
-                    )}
-                    <Divider light>ERRORS IF ANY APPEAR BELOW</Divider>
-                    <ErrorViewer 
-                        errorMessage={errorMessage} 
-                        errorTraceback={errorTraceback}
-                    />                    
-                </Stack>
-            </Stack>
-      </Box>
-    );
-}
-
-type VerticalTabComponentsProps = { 
-    name : string 
-    currentServer : PythonServer
-    globalState : ApplicationState
-    setErrorMessage : any 
-    setErrorTraceback : any
-}
-
-const VerticalTabComponents = ( { name, currentServer, globalState, setErrorMessage, setErrorTraceback } : VerticalTabComponentsProps ) => {
+const VerticalTabComponents = ( { name } : { name : string } ) => {
 
     switch(name) {
-        case 'Status'          : return <StatusDisplay
-                                            globalState={globalState}
-                                            currentServer={currentServer}
-                                        />
-        case 'New Eventloop'   : return <EventLoopWizard></EventLoopWizard>
-        case 'New Device'      : return <RemoteObjectWizard 
-                                            globalState={globalState}
-                                            currentServer={currentServer}
-                                            setErrorMessage={setErrorMessage}
-                                            setErrorTraceback={setErrorTraceback}
-                                        />
-        case 'New HTTP Server' : return <HTTPServerWizard></HTTPServerWizard>
-        default : return <div>error</div>
+        case 'Status' : return <StatusDisplay />
+        // case 'New Eventloop'   : return <EventLoopWizard></EventLoopWizard>
+        case 'New Remote Object' : return <RemoteObjectWizard />
+        case 'New HTTP Server' : return <HTTPServerWizard />
+        default : return <div>unimplemented tab</div>
     }
 }
 
-type StatusDisplayProps = {
-    globalState : ApplicationState
-    currentServer : PythonServer
-}
 
-const StatusDisplay = (props : StatusDisplayProps) => {
-    console.log(props.currentServer)
+const StatusDisplay = () => {
+
+    const { currentServer } = useContext(ServerWizardContext) as ServerWizardProps
+  
     // - get postman/hoppscotch files
-    const sortedRemoteObjects = props.currentServer.remoteObjectInfo.reduce((totalInfo, currentInfo) => {
-            // @ts-ignore    
-            if(!totalInfo[currentInfo.level])
-                // @ts-ignore
-                totalInfo[currentInfo.level] = []
-            // @ts-ignore                
-            totalInfo[currentInfo.level].push(currentInfo)
-            return totalInfo
-        }, {})
-            // }, {}))
-
+    const sortedRemoteObjects = useMemo(() => {
+        if(currentServer) {
+            return currentServer.remoteObjectsInfo.reduce((totalInfo : any, currentInfo : any) => {
+                if(!totalInfo[currentInfo.level])
+                    totalInfo[currentInfo.level] = []
+                totalInfo[currentInfo.level].push(currentInfo)
+                return totalInfo
+            }, {})
+        }
+        return {}
+    }, [currentServer])
+    
+ 
     return (
         <div> 
-            {
-                sortedRemoteObjects? Object.keys(sortedRemoteObjects).map((level)=>{
-                    return (
-                        <div key={level}>
-                            <Stack>
-                                <Typography variant="button" fontSize={24} textAlign={"center"}>
-                                    {`LEVEL ${level}`}
-                                </Typography>
-                                {
-                                    // @ts-ignore
-                                    sortedRemoteObjects[level].map((info : any) => {
-                                        return (
-                                            <FormControlLabel 
-                                                key={info.instance_name}
-                                                value={info.instance_name}
-                                                control={<Radio />} 
-                                                checked={props.currentServer.remoteObjectState[info.instance_name] !== 'DEAD'}
-                                                label={
-                                                    <Stack direction="row">
-                                                        <Typography>
-                                                            {info.instance_name} 
-                                                        </Typography>
-                                                        <Typography component="pre" color={"grey"}>
-                                                            {` (${props.currentServer.remoteObjectState[info.instance_name]})`}
-                                                        </Typography>
-                                                    </Stack>    
-                                                }
-                                            />
-                                            )
-                                        })                                    
-                                }
-                            </Stack>    
-                        </div>
-                    )})  : null 
-
+            {Object.keys(sortedRemoteObjects).length > 0 ? Object.keys(sortedRemoteObjects).map((level)=>{
+                return (
+                    <div key={level}>
+                        <Stack>
+                            <Typography variant="button" fontSize={24} textAlign={"center"}>
+                                {`LEVEL ${level}`}
+                            </Typography>
+                            {sortedRemoteObjects[level].map((info : any) => {
+                                return (
+                                    <FormControlLabel 
+                                        key={info.instance_name}
+                                        value={info.instance_name}
+                                        control={<Radio />} 
+                                        checked={currentServer!.remoteObjectState[info.instance_name] !== 'DEAD'}
+                                        label={
+                                            <Stack direction="row">
+                                                <Typography>
+                                                    {info.instance_name} 
+                                                </Typography>
+                                                <Typography component="pre" color={"grey"}>
+                                                    {` (${currentServer!.remoteObjectState[info.instance_name]})`}
+                                                </Typography>
+                                            </Stack>    
+                                        }
+                                    />
+                                )
+                            })}
+                        </Stack>    
+                    </div>
+                )})  : 
+                <Typography sx={{ pb : 2 }}>
+                    No HTTP server chosen or no remote objects found <br/>
+                    Choose different HTTP server or instantiate new remote objects
+                </Typography>
             }
         </div>
     )
 }
 
 
-const EventLoopWizard = (props : any) => {
-
-    return (
-        <div>
-            Event Loop Wizard
-        </div>
-    )
-}
 
 export const PrevNextNavigation = (props : any) => {
     
@@ -260,7 +195,7 @@ export const PrevNextNavigation = (props : any) => {
                     p:1, flexGrow : 1}}
                     onClick={()=> props.setActiveStep(props.activeStep-1)}
                 > 
-                    <Button startIcon={<ArrowBackIcon />} variant='outlined'>
+                    <Button startIcon={<IconsMaterial.ArrowBack />} variant='outlined'>
                         previous
                     </Button>
                 </Box> 
@@ -272,7 +207,7 @@ export const PrevNextNavigation = (props : any) => {
                     p:1, flexGrow : 1}} 
                     onClick={()=> props.setActiveStep(props.activeStep+1)}
                 >
-                    <Button endIcon={<ArrowForwardIcon />} variant='outlined'>
+                    <Button endIcon={<IconsMaterial.ArrowForward />} variant='outlined'>
                         next
                     </Button>
                 </Box> 
@@ -282,21 +217,15 @@ export const PrevNextNavigation = (props : any) => {
 }
 
 
-type RemoteObjectWizardProps = {
-    currentServer : PythonServer
-    globalState : ApplicationState
-    setErrorMessage : any 
-    setErrorTraceback : any 
-}
 
-const RemoteObjectWizard = ( { currentServer, globalState, setErrorMessage, setErrorTraceback } : RemoteObjectWizardProps ) => {
 
-    console.log(currentServer)
-    const [activeStep, setActiveStep] = React.useState(0)
-    const [successfulSteps, setSuccessfulSteps] = React.useState(globalState.HTTPServerWizardData.remoteObjectWizardData.successfulSteps)
+const RemoteObjectWizard = () => {
+
+    const { currentServer, setErrorMessage, setErrorTraceback } = useContext(ServerWizardContext) as ServerWizardProps
+    const [activeStep, setActiveStep] = useState(0)
+    const [successfulSteps, setSuccessfulSteps] = useState([false, false, false])
     const [DBParamInfo, setDBParamInfo] = useState<Array<ParameterInformation>>([])
-    const theme = useTheme()
-
+    
     return (
         <Stack id="device-wizard" sx={{ flexGrow: 1, display: 'flex' }} >
             <Box id="stepper-component-box" sx={{ flexGrow: 1, display: 'flex'}} >
@@ -696,7 +625,7 @@ const RemoteObjectInstantiator = ( { globalState, activeStep, setActiveStep, cur
                     id='use-dashed-URLs'
                     disablePortal
                     autoComplete 
-                    onChange={(event, newValue) => {
+                    onChange={(_, newValue) => {
                         if(newValue === 'False')
                             setUseDashedURLs(false)
                         else 
@@ -802,7 +731,7 @@ const RemoteObjectInstantiator = ( { globalState, activeStep, setActiveStep, cur
                                     disabled={currentParam === DBParamInfo.length - 1}
                                 >
                                     Next
-                                    <KeyboardArrowRight />
+                                    <IconsMaterial.KeyboardArrowRight />
                                 </Button>
                             }
                             backButton={
@@ -811,7 +740,7 @@ const RemoteObjectInstantiator = ( { globalState, activeStep, setActiveStep, cur
                                     onClick={() => {setCurrentParam(currentParam-1)}}
                                     disabled={currentParam === 0}
                                 >
-                                    <KeyboardArrowLeft /> 
+                                    <IconsMaterial.KeyboardArrowLeft /> 
                                     Back
                                 </Button>
                             }
@@ -841,86 +770,84 @@ export const ParamWizard = (props : any) => {
 }
 
 
-export const HTTPServerWizard = (props : any) => {
+export const HTTPServerWizard = () => {
 
     const [port, setPort] = useState<number>(8080)
     const [subscribeToCurrentHost, setSubscribeToCurrentHost] = useState<boolean>(true)
-    const handleSubscription = (event : any) => {
+    const handleSubscription = (event : React.ChangeEvent<HTMLInputElement>) => {
         setSubscribeToCurrentHost(event.target.checked)
     }
 
     return (
-        <Box
-            id="http-server-wizard-box"
-            sx={{ flexGrow: 1, display: 'flex', pl : 5}}
-        > 
-            <Stack direction="column" sx={{ display: "flex", flexGrow : 0.75 }}>
-                <Stack direction="row" spacing={2} sx={{ display: "flex", flexGrow : 0.75 }}>
-                    <TextField 
-                        label="Port" 
-                        value={port}
-                        onChange={(event) => setPort(Number(event.target.value))}
-                        required     
-                        variant = "standard"
-                    />
-                    <Autocomplete
-                        disablePortal
-                        size="medium"
-                        autoComplete   
-                        defaultValue={'INFO'}
-                        options={['DEBUG', 'INFO', 'ERROR']}
-                        renderInput={(params) => <TextField {...params} variant="standard" label='log level'/>}
-                        sx={{ display: "flex", flexGrow : 0.1 }}
-                    />
-                </Stack>
-                <Stack direction = "row" sx={{pt : 1}}>
-                    <TextField 
-                        label="remote objects" 
-                        multiline
-                        rows={3}
-                        variant = "standard"
-                        helperText = "comma separated instance names of remote objects to be served, optional"
-                        sx={{ display: "flex", flexGrow : 0.1 }}
-                    />
-                </Stack>
-                <FormControlLabel
-                    id='console-window-strinfiy-output-form'
-                    label="subcribe to current primary host"
-                    control={<Checkbox
-                                id='console-window-stringify-output-checkbox'
-                                size="small"
-                                onChange={handleSubscription}
-                            />}
-                    checked={subscribeToCurrentHost}
-                    sx={{ pt : 2}}
-                />
+        <Stack id="new-http-server-wizard-box" direction="column" sx={{ display: "flex", flexGrow : 0.75 }}>
+            <Stack id='port-and-log-level-stack' direction="row" spacing={2} sx={{ display: "flex", flexGrow : 0.75 }}>
                 <TextField 
-                    label="certificate file" 
+                    label="Port" 
+                    value={port}
+                    onChange={(event) => setPort(Number(event.target.value))}
+                    required     
                     variant = "standard"
-                    helperText = "path to HTTPS certificate file (optional)"
+                />
+                <Autocomplete
+                    disablePortal
+                    size="medium"
+                    autoComplete   
+                    defaultValue={'INFO'}
+                    options={['DEBUG', 'INFO', 'WARN', 'ERROR']}
+                    renderInput={(params) => <TextField {...params} variant="standard" label='log level'/>}
                     sx={{ display: "flex", flexGrow : 0.1 }}
                 />
-                <TextField 
-                    label="key file" 
-                    variant = "standard"
-                    helperText = "path to HTTPS key file (optional)"
-                    sx={{ display: "flex", flexGrow : 0.1 }}
-                />
-                
-                <Stack direction = "row" sx={{pt : 2}}>
-                    <Button
-                        variant="contained"
-                        sx={{ display: "flex", flexGrow : 0.05 }}
-                    >
-                        Create
-                    </Button>
-                    <Box></Box>
-                </Stack>
             </Stack>
-        </Box>
+            <Stack direction = "row" sx={{ pt : 1 }}
+                // flexGrow of TextField below has some issue or wrongly configured, so we used a stack as cover
+            > 
+                <TextField 
+                    label="remote objects" 
+                    multiline
+                    rows={3}
+                    variant = "standard"
+                    helperText = "comma separated instance names of remote objects to be served, optional"
+                    sx={{ display: "flex", flexGrow : 0.1, pt : 1 }}
+                />
+            </Stack>
+            <FormControlLabel
+                id='subscribe-to-primary-host-form'
+                label="subcribe to current primary host"
+                control={<Checkbox
+                            id='subscribe-to-primary-host-checkbox'
+                            size="small"
+                            onChange={handleSubscription}
+                        />}
+                checked={subscribeToCurrentHost}
+                sx={{ pt : 2 }}
+            />
+            <TextField 
+                id='certificate-file-textfield'
+                label="certificate file" 
+                variant = "standard"
+                helperText = "path to HTTPS certificate file (optional)"
+                sx={{ display: "flex", flexGrow : 0.1 }}
+            />
+            <TextField 
+                id='key-file-textfield'
+                label="key file" 
+                variant = "standard"
+                helperText = "path to HTTPS key file (optional)"
+                sx={{ display: "flex", flexGrow : 0.1 }}
+            />
+            <Stack direction = "row" sx={{ pt : 2 }}>
+                <Button
+                    variant="contained"
+                    sx={{ display: "flex", flexGrow : 0.05 }}
+                >
+                    Create
+                </Button>
+            </Stack>
+        </Stack>
     )
-    
 }
+
+
 
 type ParameterInputChoiceProps = {
     choice : string 

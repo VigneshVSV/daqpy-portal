@@ -2,8 +2,8 @@
 import { makeObservable, observable, action } from 'mobx';
 import axios, { AxiosResponse } from 'axios';
 // Custom functional libraries
-import { asyncRequest } from 'mobx-render-engine/utils/http';
-import { fetchFieldFromLocalStorage } from 'mobx-render-engine/utils/misc';
+import { asyncRequest } from '@hololinked/mobx-render-engine/utils/http';
+import { fetchFieldFromLocalStorage } from '@hololinked/mobx-render-engine/utils/misc';
 // Internal & 3rd party component libraries
 import { EventInfo, EventInformation, MethodInfo, MethodInformation, ParameterInfo, 
     ParameterInformation, RemoteObjectInformation } from './remote-object-info-containers';

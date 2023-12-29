@@ -3,10 +3,10 @@
 import { SyntheticEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
 // Custom functional libraries
-import { getFormattedTimestamp } from "mobx-render-engine/utils/misc";
-import { asyncRequest } from "mobx-render-engine/utils/http";
+import { getFormattedTimestamp } from "@hololinked/mobx-render-engine/utils/misc";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 import { createHololinkedPortalStateManager } from "../app-state";
-import { StateManager, Action, BaseAction } from "mobx-render-engine/state-manager";
+import { StateManager, Action, BaseAction } from "@hololinked/mobx-render-engine/state-manager";
 // Internal & 3rd party component libraries
 import { Stack, Typography, Tabs, Tab, FormControl, FormControlLabel, Button, ButtonGroup, 
     RadioGroup, Box, Chip, Radio, useTheme, TextField, Link, Autocomplete, IconButton } from "@mui/material";

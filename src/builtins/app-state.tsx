@@ -1,9 +1,9 @@
-import { Logger } from "mobx-render-engine/utils/logger";
+import { Logger } from "@hololinked/mobx-render-engine/utils/logger";
 import { ApplicationState } from "../mobx/state-container";
-import { prepareRenderers as prepareRenderersForBaseComponents } from "mobx-render-engine/component-registration";
-import { prepareRenderers as prepareRenderersForMUI } from "mui-mobx-render-engine/component-registration";
-import { prepareRenderers as prepareRenderersForPortalComponents } from "hololinked-dashboard-components/component-registration";
-import { createStateManager } from "mobx-render-engine/state-manager" 
+import { prepareRenderers as prepareRenderersForBaseComponents } from "@hololinked/mobx-render-engine/component-registration";
+import { prepareRenderers as prepareRenderersForMUI } from "@hololinked/mui-render-engine/component-registration";
+import { prepareRenderers as prepareRenderersForPortalComponents } from "@hololinked/dashboard-components/component-registration";
+import { createStateManager } from "@hololinked/mobx-render-engine/state-manager" 
 
 export const globalAppState = new ApplicationState()
 

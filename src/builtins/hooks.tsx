@@ -1,9 +1,9 @@
 // Internal & 3rd party functional libraries
 import  { useState, useCallback, useEffect, MutableRefObject } from "react";
 // Custom functional libraries
-import { asyncRequest } from "mobx-render-engine/utils/http";
-import { StateManager } from "mobx-render-engine/state-manager";
-import { fetchFieldFromLocalStorage } from "mobx-render-engine/utils/misc";
+import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
+import { StateManager } from "@hololinked/mobx-render-engine/state-manager";
+import { fetchFieldFromLocalStorage } from "@hololinked/mobx-render-engine/utils/misc";
 // Internal & 3rd party component libraries
 // Custom component libraries 
 
