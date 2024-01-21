@@ -76,19 +76,38 @@ export const useAutoCompleteOptionsFromLocalStorage = (field : string) => {
 
     useEffect(() => {
         let data = fetchFieldFromLocalStorage(null, {})
-        if(!data[field])
-            data[field] = []
         setExistingData(data)
     }, [])
 
-    const modifyOptions = useCallback((entry : string, operation : 'ADD' | 'DELETE') => {
+    const modifyOptions = useCallback((entry : string | string[], operation : 'ADD' | 'DELETE') => {
         if(operation === 'ADD') {
-            if(!existingData[field].includes(entry)) 
-                existingData[field].push(entry)
+            if(Array.isArray(entry)) {
+                for(let value of entry) {
+                    if(value) {
+                        if(!existingData[field].includes(value)) 
+                            existingData[field].push(value)
+                    }
+                }
+            }
+            else if(entry) {
+                if(!existingData[field].includes(entry)) 
+                    existingData[field].push(entry)
+            }
         }
         else {
-            if(existingData[field].includes(entry)) {
-                existingData[field].splice(existingData[field].indexOf(entry), 1)
+            if(Array.isArray(entry)) {
+                for(let value of entry) {
+                    if(value) {
+                        if(existingData[field].includes(entry)) {
+                            existingData[field].splice(existingData[field].indexOf(entry), 1)
+                        }
+                    }
+                }
+            }
+            else if(entry) {
+                if(existingData[field].includes(entry)) {
+                    existingData[field].splice(existingData[field].indexOf(entry), 1)
+                }
             }
         }
         setExistingData(existingData)

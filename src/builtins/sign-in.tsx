@@ -1,18 +1,19 @@
 // Internal & 3rd party functional libraries
 import { useEffect, useState, useCallback, useRef, useContext } from 'react';
 import { observer } from 'mobx-react-lite';
+import axios from 'axios';
 // Custom functional libraries
 import { createHololinkedPortalStateManager } from "./app-state";
 import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
-import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, 
-        Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Tooltip, LinearProgress,
-       } from '@mui/material';
+import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
+    IconButton, Stack, Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, 
+    Tooltip, LinearProgress } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
-import axios from 'axios';
 import { AppContext, AppProps } from '../App';
+
 
 
 
@@ -48,7 +49,9 @@ export const SignIn = observer(() => {
     const [primaryHost, setPrimaryHost] = useState<string>('')    
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
-    const [attemptingLogin, setAttemptingLogin] = useState<boolean>(false)
+    const [loginLoading, setLoginLoading] = useState<boolean>(false)
+    const [loginMessage, setLoginMessage] = useState<string>('')
+    const [primaryHostOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('primary-host-options')
 
     const updateGlobalState = useCallback(async (primaryHost : string | undefined) => {
         let loginDisabled = true, errMsg = ''
@@ -58,8 +61,8 @@ export const SignIn = observer(() => {
                 if(globalState.primaryHostServer) {
                     await globalState.fetchServerData()
                 }
+                loginDisabled = false
             } catch(error : any) {
-                loginDisabled = true
                 if(error.response) 
                     errMsg = `host server fetch failed - ${error.message} - response status - ${error.response.status}`
                 else 
@@ -68,54 +71,66 @@ export const SignIn = observer(() => {
         }
         setLoginDisabled(loginDisabled)
         setErrorMessage(errMsg)
-    }, [setLoginDisabled, setErrorMessage])
+    }, [globalState])
   
-    const pingPrimaryHost = useCallback(async() => {
-        let errMsg = '', loginDisabled = true
-        if(primaryHost) {
+    const pingPrimaryHost = useCallback(async(host : string = '') => {
+        host = host ? host : primaryHost
+        let errMsg = '', loginDisabled = true, response = null
+        setLoginLoading(true)
+        setLoginMessage('pinging...')
+        if(host) {
             try {
-                const response = await axios.get(primaryHost)
+                response = await axios.get(host)
                 if(response.status === 200) {
                     loginDisabled = false
-                    globalState.setPrimaryHostServer(primaryHost)
+                    globalState.setPrimaryHostServer(host)
+                    console.log("primary host server set", host)
                 } else {
                     errMsg = response.statusText
                 }
             } catch(error : any) {
-                errMsg = error.message
+                errMsg = response? response.statusText :  error.message
             }
         }
         else {
             loginDisabled = true
             errMsg = 'set primary host'
         }
+        setLoginMessage('')
+        setLoginLoading(false)
         setLoginDisabled(loginDisabled)
         setErrorMessage(errMsg)
-    }, [primaryHost])
+    }, [primaryHost, globalState])
 
     useEffect(() => {
         updateGlobalState(process.env.REACT_APP_PRIMARY_HOST_SERVER)
+        // modifyOptions(process.env.REACT_APP_PRIMARY_HOST_SERVER, 'ADD')
     }, [])
   
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setAttemptingLogin(true)
+        setLoginLoading(true)
+        setLoginMessage('logging in...')
         const data = new FormData(event.currentTarget);
         let path = '/'
         try {
-            const response = await axios.post(`${primaryHost}/login`, {
+            const response = await axios.post(`${globalState.primaryHostServer}/login`, {
                     email: data.get('email'),
                     password: data.get('password'),
                 });
-            if(response.status === 200)
+            if(response.status === 200) {
                 path = '/overview'
+                globalState.loggedIn = true
+            }
             console.log(response.headers)
         } catch(error) {
             console.log(error)
         }
-        setAttemptingLogin(false)
+        setLoginLoading(false)
+        setLoginMessage('')
         setGlobalLocation(path)
-    }
+    }, [globalState])
+
 
     return (
         <Stack sx={{ display : 'flex', flexGrow : 1, alignItems : 'center'}}>
@@ -160,18 +175,20 @@ export const SignIn = observer(() => {
                             autoComplete="current-password"
                             disabled={loginDisabled}
                         />
-                        {/* <FormControlLabel
-                            control={
-                                <Checkbox 
-                                    value="remember" 
-                                    color="primary" 
-                                    disabled={loginDisabled} 
-                                />
-                            }
-                            label="Remember me"
-                            id='remember-me-checkbox'
-                        /> */}
-                        {attemptingLogin? 
+                        {/* 
+                            <FormControlLabel
+                                control={
+                                    <Checkbox 
+                                        value="remember" 
+                                        color="primary" 
+                                        disabled={loginDisabled} 
+                                    />
+                                }
+                                label="Remember me"
+                                id='remember-me-checkbox'
+                            /> 
+                        */}
+                        {loginLoading? 
                             <Box sx={{ pt : 2 , pb : 2 }}>
                                 <LinearProgress  />
                             </Box>
@@ -187,11 +204,26 @@ export const SignIn = observer(() => {
                                 {loginDisabled? "Select Primary Host Server To Sign In" : "Sign In"}
                             </Button>
                         }
-                        <Grid container>
-                            <Grid item xs>
-                                <Link href="#" variant="body2">
-                                    {loginDisabled? "" : "Forgot password?" }
-                                </Link>
+                        <Grid container direction="row">
+                            <Grid item>
+                                {loginDisabled?
+                                    null :        
+                                    <Link href="#" variant="body2">
+                                        Forgot password?
+                                    </Link>                          
+                                }
+                            </Grid>
+                            <Grid item>
+                                {loginMessage? 
+                                    <Link 
+                                        underline='none' 
+                                        href="#" 
+                                        variant='body2' 
+                                        sx={{ pl : 3, cursor : 'default' }}
+                                    >
+                                        {loginMessage}
+                                    </Link> : null        
+                                }
                             </Grid>
                         </Grid>
                     </Box>
@@ -210,19 +242,29 @@ export const SignIn = observer(() => {
                             disablePortal
                             freeSolo
                             id="combo-box-demo"
-                            options={[]}
-                            renderInput={(params) => <TextField 
-                                {...params} 
-                                onChange={(event) => {setPrimaryHost(event.target.value)}}
-                                label="Primary Host Server"
-                                variant='standard'
-                                value={primaryHost}
+                            options={primaryHostOptions}
+                            onChange={(event, host) => { 
+                                setPrimaryHost(host as string)
+                                pingPrimaryHost(host as string)
+                            }}
+                            renderInput={(params) => 
+                                <TextField 
+                                    {...params} 
+                                    onChange={(event) => {setPrimaryHost(event.target.value)}}
+                                    label="Primary Host Server"
+                                    variant='standard'
+                                    value={primaryHost}
                                 />}
                                 sx={{ flexGrow : 1, display : 'flex'}}
                         />
                         <IconButton size="large" onClick={async() => {await pingPrimaryHost()}}>
                             <Tooltip title="ping to activate sign in box">
                                 <IconsMaterial.SyncAltSharp />
+                            </Tooltip>
+                        </IconButton>
+                        <IconButton size="large" onClick={() => {modifyOptions(primaryHost, 'ADD')}}>
+                            <Tooltip title="save primary host locally in browser">
+                                <IconsMaterial.SaveTwoTone />
                             </Tooltip>
                         </IconButton>
                     </Stack>
@@ -257,7 +299,7 @@ export const SignIn = observer(() => {
                             </IconButton>                
                         </Tooltip>
                     </Grid>
-                    <Grid item>
+                    {/* <Grid item>
                         <Tooltip title="viewer for visualization parameter">
                             <IconButton
                                 size="large"    
@@ -266,7 +308,7 @@ export const SignIn = observer(() => {
                                 <IconsMaterial.TimelineTwoTone fontSize='large'/>
                             </IconButton>                
                         </Tooltip>
-                    </Grid>
+                    </Grid> */}
                     <Grid item>
                         <DashboardURLDialog /> 
                     </Grid>

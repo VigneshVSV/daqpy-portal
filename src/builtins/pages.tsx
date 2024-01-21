@@ -1,13 +1,11 @@
-'use client'
 // Internal & 3rd party functional libraries
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import axios, { AxiosResponse } from "axios";
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, 
-    CircularProgress, Container, Dialog, Divider, FormControl, FormControlLabel, Grid, 
-    IconButton, InputAdornment, Link, OutlinedInput, Paper, Portal, Stack, TextField, Toolbar, 
-    Tooltip, Typography } from "@mui/material"
+    CircularProgress, Container, Dialog, FormControl, FormControlLabel, Grid, 
+    IconButton, Link, Stack, TextField, Tooltip, Typography } from "@mui/material"
 import * as IconsMaterial from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
@@ -17,12 +15,13 @@ import LaunchTwoToneIcon from '@mui/icons-material/LaunchTwoTone';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 // Custom component libraries 
 import { RootLogger } from "./app-state"
-import { ApplicationState } from "../mobx/state-container";
+import { AppContext, AppProps } from "../App";
 
 
 
-export const AddPage = ({ globalState } : { globalState : ApplicationState }) => {
+export const AddPage = () => {
 
+    const { globalState } = useContext(AppContext) as AppProps 
     const [loading, setLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
     const [URL, setURL] = useState('')
@@ -45,7 +44,7 @@ export const AddPage = ({ globalState } : { globalState : ApplicationState }) =>
 
                     })
                 if(response.status !== 200)
-                    errMsg = `could not save dashboard to database - ${response.status}` 
+                    errMsg = `could not save dashboard to database - ${response.status}`
                 
             } catch (error : any) {
                 errMsg = `could not save dashboard to database - ${error.message}` 
@@ -53,7 +52,7 @@ export const AddPage = ({ globalState } : { globalState : ApplicationState }) =>
             setErrorMessage(errMsg)
         }
         sendPageToServer()
-    }, [])
+    }, [globalState])
 
     return (
         <Container component="main" maxWidth="sm">  
@@ -156,27 +155,29 @@ type Dashboard = {
     JSON? : object
 }
 
-export const ShowPages = ({ globalState, setGlobalLocation } : { globalState : ApplicationState, setGlobalLocation : any }) => {
+export const Pages = () => {
 
     const [pages, setPages] = useState<Dashboard[]>([])
     const [openDialog, setOpenDialog] = useState<boolean>(false)
+    const [errMsg, setErrorMessage] = useState<string>('')
+    const { globalState } = useContext(AppContext) as AppProps
    
     const fetchPages = useCallback(async() => {
-        let _pages = [] 
+        let _pages = [], response = null, errMsg = ''
         try {
             if(globalState.primaryHostServer){
-                const response = await axios.get(`${globalState.primaryHostServer}/dashboards`) as AxiosResponse
+                response = await axios.get(`${globalState.primaryHostServer}/dashboards`) as AxiosResponse
                 if(response.status === 200)
                     _pages = response.data
             }
-        } catch(error) {
-
+        } catch(error : any ) {
+            errMsg = response? response.statusText : error.message
         }
         // pages = response.data
         setPages(_pages)
-    }, [])
+        setErrorMessage(errMsg)
+    }, [globalState])
 
-    console.log("pages are", pages)
     useEffect(() => {
         fetchPages() 
     }, [])
@@ -199,65 +200,71 @@ export const ShowPages = ({ globalState, setGlobalLocation } : { globalState : A
                         <Grid item sx={{ pt : 5 }}>
                             {pages.length > 0 ? pages.map((page : Dashboard, index) => {
                                 return (
-                                    <Accordion key={index.toString()}>
-                                        <AccordionSummary expandIcon = {<ExpandMoreIcon />} >
-                                            <Typography sx = {{pt : 1}}>
-                                                {page.name} <br/>
-                                                <Typography variant="caption">{page.description}</Typography>
-                                            </Typography>
-                                            <Box display='flex' justifyContent='flex-end' sx={{ flexGrow : 1 }}>
-                                                <IconButton size="large">
-                                                    <OpenInNewOffTwoToneIcon></OpenInNewOffTwoToneIcon>
-                                                </IconButton>
-                                                <IconButton size="large">
-                                                    <LaunchTwoToneIcon></LaunchTwoToneIcon>
-                                                </IconButton>
-                                            </Box>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            <Typography fontSize={14} variant='overline'>
-                                                URL :  
-                                            </Typography>
-                                            <Link 
-                                                href={page.URL}
-                                                target="_blank" 
-                                                rel="noopener noreferrer" 
-                                                underline='hover' 
-                                                variant='body2' 
-                                                sx = {{pl : 1}}
-                                            >
-                                                {page.URL}
-                                            </Link>                                 
-                                            <Box display='flex' justifyContent="flex-start" sx={{flexGrow:1, pt:1}}>
-                                                <Button variant='outlined'>Open</Button>
-                                                <Box  display='flex' justifyContent="flex-end" sx={{flexGrow:3}}>
-                                                    <Tooltip title='edit'>
-                                                        <IconButton >
-                                                            <EditTwoToneIcon></EditTwoToneIcon> 
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <IconButton>
-                                                        <RefreshTwoToneIcon></RefreshTwoToneIcon>
+                                    <Box sx={{pt : 2}} key={'page' + index.toString()}>
+                                        <Accordion>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon />} >
+                                                <Typography 
+                                                    textAlign='center' 
+                                                    sx={{ display : 'flex', flexDirection : 'column',
+                                                        justifyContent : 'center'}}
+                                                >
+                                                    {page.name} 
+                                                </Typography>
+                                                <Box display='flex' justifyContent='flex-end' sx={{ flexGrow : 1 }}>
+                                                    <IconButton size="large" onClick={() => {console.log("not implemented yet")}}>
+                                                        <OpenInNewOffTwoToneIcon></OpenInNewOffTwoToneIcon>
                                                     </IconButton>
-                                                    <IconButton>
-                                                        <DeleteTwoToneIcon></DeleteTwoToneIcon>
+                                                    <IconButton size="large" onClick={() => {console.log("not implemented yet")}}>
+                                                        <LaunchTwoToneIcon></LaunchTwoToneIcon>
                                                     </IconButton>
                                                 </Box>
-                                            </Box>
-                                        </AccordionDetails>
-                                    </Accordion>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Typography variant="caption">{page.description}</Typography>
+                                                <Typography fontSize={14} variant='overline'>
+                                                    <br/ > URL :  
+                                                </Typography>
+                                                <Link 
+                                                    href={page.URL}
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    underline='hover' 
+                                                    variant='body2' 
+                                                    sx = {{pl : 1}}
+                                                >
+                                                    {page.URL}
+                                                </Link>                                 
+                                                <Box display='flex' justifyContent="flex-start" sx={{flexGrow:1, pt:1}}>
+                                                    <Button variant='outlined'>Open</Button>
+                                                    <Box  display='flex' justifyContent="flex-end" sx={{flexGrow:3}}>
+                                                        <Tooltip title='edit'>
+                                                            <IconButton >
+                                                                <EditTwoToneIcon></EditTwoToneIcon> 
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <IconButton>
+                                                            <RefreshTwoToneIcon></RefreshTwoToneIcon>
+                                                        </IconButton>
+                                                        <IconButton>
+                                                            <DeleteTwoToneIcon></DeleteTwoToneIcon>
+                                                        </IconButton>
+                                                    </Box>
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    </Box>
                                 )
                             })
                             : 
                             <Typography fontSize={16} variant="button">
-                                None to show. Click plus to add. 
+                                {errMsg? errMsg : 'None to show. Click plus to add.'}
                             </Typography>}
                         </Grid>
                     </Grid>
                 </Grid>
             </Grid> 
             <Dialog open={openDialog}>
-                <AddPage globalState={globalState} />
+                <AddPage />
                 <Stack alignSelf='flex-end' sx={{ pb : 1, pr : 2 }}>
                     <Button onClick={() => setOpenDialog(false)}>Close</Button>
                 </Stack>

@@ -131,6 +131,7 @@ export class ApplicationState {
     dashboardStateManager : StateManager | null
     dashboardURL : string
     setGlobalLocation : Function | null
+    _loggedIn : boolean
 
     constructor() {
         this.primaryHostServer = null
@@ -152,16 +153,48 @@ export class ApplicationState {
         this.dashboardStateManager = null
         this.dashboardURL = ''
         this.setGlobalLocation = null
-
+        this._loggedIn = false 
         makeObservable(this, {
                 appsettings : observable,
                 dashboardStateManager : observable,
                 dashboardURL : observable,
                 setPrimaryHostServer : action,
                 updateSettings : action,
-                setDashboard : action
+                setDashboard : action,
             }
         )
+    }
+
+    get json () : string {
+        return JSON.stringify({
+            primaryHostServer : this.primaryHostServer,
+            appsettings : this.appsettings,
+            servers : [],
+            loggedIn : this._loggedIn
+        })
+    }
+
+    get loggedIn () {
+        return JSON.parse(window.sessionStorage.getItem('logged-in') as string)
+    }
+
+    set loggedIn (value : boolean) {
+        window.sessionStorage.setItem('logged-in', JSON.stringify(value))
+    }
+
+    static createObjectFromSession() : ApplicationState {
+        let state = new ApplicationState()
+        let primaryHostServer = window.sessionStorage.getItem('primaryHostServer')
+        if(primaryHostServer) 
+            // @ts-ignore
+            state.primaryHostServer = primaryHostServer
+        let appsettings = window.sessionStorage.getItem('appsettings')
+        if(appsettings)
+            state.appsettings = JSON.parse(appsettings)
+        let loggedIn = window.sessionStorage.getItem('loggedIn')
+        if(loggedIn)
+            state.loggedIn = JSON.parse(loggedIn)
+        return state
     }
 
     async updateSettings(field : string, value : any) {
@@ -179,6 +212,7 @@ export class ApplicationState {
         if(response.status === 200) {
             // @ts-ignore
             this.appsettings[field] = value
+            window.sessionStorage.setItem('appsettings', JSON.parse(this.appsettings))
         }
         // console.log(this.appsettings)
     }
@@ -186,6 +220,7 @@ export class ApplicationState {
     async setPrimaryHostServer(serverURL : string) {
         // @ts-ignore
         this.primaryHostServer = serverURL
+        window.sessionStorage.setItem('primaryHostServer', serverURL)
         return
         await Promise.all([axios({
             url : 'dashboard-util/app/info/all', 

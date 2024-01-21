@@ -7,11 +7,13 @@ import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon,
 import * as IconsMaterial from '@mui/icons-material/';
 // Custom component libraries
 import { ApplicationState } from "../mobx/state-container";
-import { AddPage, ShowPages} from './pages';
+import { Pages} from './pages';
 import { AppSettings } from "./app-settings";
 import { ServerWizard } from "./http-server-wizard/view";
 import { RemoteObjectViewer } from "./remote-object-client/view";
 import { RemoteObjectClientState } from "./remote-object-client/remote-object-client-state";
+import { useContext } from "react";
+import { AppContext, AppProps } from "../App";
 
 
 
@@ -23,6 +25,14 @@ import { RemoteObjectClientState } from "./remote-object-client/remote-object-cl
 //     justifyContent: 'flex-end',
 // }));
 
+
+type DrawerOptionProps = {
+    text : string 
+    icon : JSX.Element 
+    path : string
+    globalPath? : boolean
+    onClick? : (globalState : ApplicationState) => void | null
+}
 
 const DrawerTitle = (props : any) => {
     const theme = useTheme()
@@ -42,21 +52,24 @@ const DrawerTitle = (props : any) => {
     )
 }
 
+const DrawerGroup = ({ content } : { content : DrawerOptionProps[] }) => {
 
-const DrawerGroup = (props : any) => {
-
-    const [_, setLocation] = useLocation()
+    const { setGlobalLocation, globalState } = useContext(AppContext) as AppProps 
 
     return (
         <List>
-            {props.content.map((contentInfo : any) => (
+            {content.map((contentInfo : DrawerOptionProps) => (
                 <ListItem key={contentInfo.text} disablePadding>
                     <ListItemButton
                         sx = {{
                             '&:hover': { backgroundColor : '#EAF7FE'}
                         }}
-                        onClick={() => {contentInfo.globalPath?
-                            props.setGlobalLocation(contentInfo.path) : setLocation(contentInfo.path)}}
+                        onClick={() => {
+                            if(contentInfo.onClick)
+                                contentInfo.onClick(globalState)
+                            let path = contentInfo.globalPath? '/overview' + contentInfo.path : contentInfo.path
+                            setGlobalLocation(path)}
+                        }
                     >
                         <ListItemIcon sx = {{
                             '&:hover': {
@@ -74,71 +87,69 @@ const DrawerGroup = (props : any) => {
 }
 
 
-const Panels : any = {
+
+
+const Panels : { [key : string] : DrawerOptionProps[] } = {
     'Dashboard' : [
         {
-            text : 'Pages',
+            text : 'Pages/Dashboards',
             icon : <IconsMaterial.DashboardTwoTone />,
-            path : '/pages'
+            path : '/overview/pages',
         }
     ],
     'App' : [
         {
             text : 'Settings',
             icon : <IconsMaterial.SettingsTwoTone />,
-            path : '/settings'
+            path : '/overview/settings',
         },
-        {
-            text : 'Log Viewer',
-            icon : <IconsMaterial.TableChartTwoTone />,
-            path : '/log-viewer'
-    }],
+    ],
     'Python Servers' : [
+        {
+            text: 'Remote Object Wizard',
+            icon: <IconsMaterial.TerminalTwoTone />,
+            path: '/objects'
+        },
         {
             text: 'HTTP Server Wizard',
             icon: <IconsMaterial.AccountTreeTwoTone />,
             path: '/servers'
         },
         {
-            text: 'Remote Object Wizard',
-            icon: <IconsMaterial.TerminalTwoTone />,
-            path: '/objects'
-    }],
+            text: 'Log Viewer',
+            icon: <IconsMaterial.TableChartTwoTone />,
+            path: '/log-viewer'
+        }
+    ],
     'Account' : [
         {
             text: 'Logout',
             icon: <IconsMaterial.LogoutTwoTone />,
             path: '/',
-            globalPath : true
+            onClick : (globalState : ApplicationState) => { globalState.loggedIn = false }
         },
-        {
-            text : 'Account Information',
-            icon : <IconsMaterial.AccountCircleTwoTone />,
-            path : '/login-info'
-    }]
+    //     {
+    //         text : 'Account Information',
+    //         icon : <IconsMaterial.AccountCircleTwoTone />,
+    //         path : '/login-info'
+    //     },
+    ]
 }
-
-
-// const styles = (theme : any) => ({
-//     // Load app bar information from the theme
-//     toolbar: theme.mixins.toolbar,
-// });
 
 
 
 type OverviewProps = {
-    baseRoute : string
-    globalState : ApplicationState
-    setGlobalLocation : any
-    globalRouter : any
+    baseRoute : string   
 }
 
 const drawerWidth = 300
 
-export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRouter} : OverviewProps ) => {
+export const Overview = ( { baseRoute } : OverviewProps ) => {
+
     const router = useRouter();
     const nestedBaseRoute = `${router.base}${baseRoute}`;
-    const [parentLocation] = useLocation()
+    const [ parentLocation ] = useLocation()
+    const { globalState, setGlobalLocation } = useContext(AppContext) as AppProps 
    
     if (!parentLocation.startsWith(nestedBaseRoute)) return null;
     
@@ -159,11 +170,11 @@ export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRou
                     }}
                 >
                     {Object.keys(Panels).map((group, index)=> {
-                        let info = Panels[group]
+                        let info : DrawerOptionProps[] = Panels[group]
                         return (
                             <div key={index}>
-                                <DrawerTitle text={group}></DrawerTitle>
-                                <DrawerGroup content={info} setGlobalLocation={setGlobalLocation}></DrawerGroup>
+                                <DrawerTitle text={group} />
+                                <DrawerGroup content={info} />
                             </div>
                         )
                     }
@@ -174,11 +185,8 @@ export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRou
                     component="main"
                     sx={{ display : 'flex', flexGrow : 1, p : 3 }}
                 >
-                    <Route path='/pages/add'>
-                        <AddPage globalState={globalState} setGlobalLocation={setGlobalLocation}></AddPage>
-                    </Route>
                     <Route path='/pages'>
-                        <ShowPages globalState={globalState} setGlobalLocation={setGlobalLocation} globalRouter={globalRouter}></ShowPages>
+                        <Pages />
                     </Route>
                     <Route path='/settings'>
                         <AppSettings globalState={globalState}></AppSettings>
