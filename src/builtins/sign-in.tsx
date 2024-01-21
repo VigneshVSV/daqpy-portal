@@ -1,17 +1,18 @@
 // Internal & 3rd party functional libraries
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useContext } from 'react';
 import { observer } from 'mobx-react-lite';
 // Custom functional libraries
-import { ApplicationState } from '../mobx/state-container';
 import { createHololinkedPortalStateManager } from "./app-state";
 import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, 
-        Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Tooltip,
+        Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container, Tooltip, LinearProgress,
        } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
+import axios from 'axios';
+import { AppContext, AppProps } from '../App';
 
 
 
@@ -29,7 +30,7 @@ function Footer(props: any) {
                 color="inherit" 
                 onClick={() => window.open(props.link, '_blank')} 
                 underline="hover" 
-                sx={{ cursor:'pointer' }} 
+                sx={{ cursor : 'pointer' }} 
                 rel="noopener noreferrer"
             >
                 {props.text}
@@ -41,52 +42,88 @@ function Footer(props: any) {
 
 
 
-export const SignIn = observer(({ globalState } : { globalState : ApplicationState}) => {
+export const SignIn = observer(() => {
 
-    const [primaryHostServerAlive, setPrimaryHostServerAlive] = useState<boolean>(false)
+    const { globalState, setGlobalLocation } = useContext(AppContext) as AppProps
+    const [primaryHost, setPrimaryHost] = useState<string>('')    
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
-    
-  
-    useEffect(() => {
-        const updateGlobalState = async () => {
-            let primaryHostAlive = false, loginDisabled = true, errMsg = ''
-            if(process.env.REACT_APP_PRIMARY_HOST_SERVER) {
-                try {
-                    await globalState.setPrimaryHostServer(process.env.REACT_APP_PRIMARY_HOST_SERVER)
-                    if(globalState.primaryHostServer) {
-                        primaryHostAlive = true
-                        await globalState.fetchServerData()
-                        if(process.env.REACT_APP_ADDITIONAL_HOST_SERVERS)
-                        globalState.additionalHostServers = JSON.parse(process.env.REACT_APP_ADDITIONAL_HOST_SERVERS)
-                    }
-                } catch(error : any) {
-                    loginDisabled = true
-                    if(error.response) 
-                        errMsg = `host server fetch failed - ${error.message} - response status - ${error.response.status}`
-                    else 
-                        errMsg = `host server fetch failed - ${error.message}`
+    const [attemptingLogin, setAttemptingLogin] = useState<boolean>(false)
+
+    const updateGlobalState = useCallback(async (primaryHost : string | undefined) => {
+        let loginDisabled = true, errMsg = ''
+        if(primaryHost) {
+            try {
+                await globalState.setPrimaryHostServer(primaryHost)
+                if(globalState.primaryHostServer) {
+                    await globalState.fetchServerData()
                 }
+            } catch(error : any) {
+                loginDisabled = true
+                if(error.response) 
+                    errMsg = `host server fetch failed - ${error.message} - response status - ${error.response.status}`
+                else 
+                    errMsg = `host server fetch failed - ${error.message}`
             }
-            setPrimaryHostServerAlive(primaryHostAlive)
-            setLoginDisabled(loginDisabled)
-            setErrorMessage(errMsg)
         }
-        updateGlobalState()
+        setLoginDisabled(loginDisabled)
+        setErrorMessage(errMsg)
+    }, [setLoginDisabled, setErrorMessage])
+  
+    const pingPrimaryHost = useCallback(async() => {
+        let errMsg = '', loginDisabled = true
+        if(primaryHost) {
+            try {
+                const response = await axios.get(primaryHost)
+                if(response.status === 200) {
+                    loginDisabled = false
+                    globalState.setPrimaryHostServer(primaryHost)
+                } else {
+                    errMsg = response.statusText
+                }
+            } catch(error : any) {
+                errMsg = error.message
+            }
+        }
+        else {
+            loginDisabled = true
+            errMsg = 'set primary host'
+        }
+        setLoginDisabled(loginDisabled)
+        setErrorMessage(errMsg)
+    }, [primaryHost])
+
+    useEffect(() => {
+        updateGlobalState(process.env.REACT_APP_PRIMARY_HOST_SERVER)
     }, [])
   
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setAttemptingLogin(true)
         const data = new FormData(event.currentTarget);
-        globalState.login()
+        let path = '/'
+        try {
+            const response = await axios.post(`${primaryHost}/login`, {
+                    email: data.get('email'),
+                    password: data.get('password'),
+                });
+            if(response.status === 200)
+                path = '/overview'
+            console.log(response.headers)
+        } catch(error) {
+            console.log(error)
+        }
+        setAttemptingLogin(false)
+        setGlobalLocation(path)
     }
 
     return (
         <Stack sx={{ display : 'flex', flexGrow : 1, alignItems : 'center'}}>
             {/* ----- sign in component ----- */}
-            <Container id='sign-in' component='main' maxWidth='xs'>
+            <Container id='sign-in-container' component='main' maxWidth='xs'>
                 <CssBaseline />
                 <Box
+
                     sx={{
                         marginTop: 8,
                         display: 'flex',
@@ -94,18 +131,18 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                         alignItems: 'center',
                     }}
                 >
-                    <Avatar sx={{m: 1, bgcolor: 'primary.main'}}>
+                    <Avatar id='lock-icon' sx={{ m: 1, bgcolor: 'primary.main' }}>
                         <IconsMaterial.LockOutlined />
                     </Avatar>
-                    <Typography component="h1" variant="h5">
+                    <Typography id='sign-in-text' component="h1" variant="h5">
                         Sign in
                     </Typography>
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <Box id='sign-in-form-box' component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                         <TextField
+                            id="email-input"
                             margin="normal"
                             required
                             fullWidth
-                            id="email"
                             label="Email Address"
                             name="email"
                             autoComplete="email"
@@ -113,39 +150,47 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                             disabled={loginDisabled}
                         />
                         <TextField
+                            id="password-input"
                             margin="normal"
                             required
                             fullWidth
-                            name="password"
                             label="Password"
+                            name="password"
                             type="password"
-                            id="password"
                             autoComplete="current-password"
                             disabled={loginDisabled}
                         />
-                        <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" disabled={loginDisabled} />}
+                        {/* <FormControlLabel
+                            control={
+                                <Checkbox 
+                                    value="remember" 
+                                    color="primary" 
+                                    disabled={loginDisabled} 
+                                />
+                            }
                             label="Remember me"
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            // onClick={()=>setLocation('/home')}
-                            disabled={loginDisabled}
-                        >
-                            {loginDisabled? "Select Primary Host Server To Sign In" : "Sign In"}
-                        </Button>
+                            id='remember-me-checkbox'
+                        /> */}
+                        {attemptingLogin? 
+                            <Box sx={{ pt : 2 , pb : 2 }}>
+                                <LinearProgress  />
+                            </Box>
+                            :
+                            <Button
+                                id='submit-button'
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                sx={{ mt: 3, mb: 2 }}
+                                disabled={loginDisabled}
+                            >
+                                {loginDisabled? "Select Primary Host Server To Sign In" : "Sign In"}
+                            </Button>
+                        }
                         <Grid container>
                             <Grid item xs>
                                 <Link href="#" variant="body2">
                                     {loginDisabled? "" : "Forgot password?" }
-                                </Link>
-                            </Grid>
-                            <Grid item>
-                                <Link href="#" variant="body2">
-                                    {loginDisabled? "" : "Don't have an account? Sign Up" }
                                 </Link>
                             </Grid>
                         </Grid>
@@ -160,26 +205,40 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                 sx={{ flexGrow : 1, display : 'flex'}}
             >
                 <Stack sx={{ flexGrow : 1, pt : 5, display : 'flex'}}>
-                <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={[]}
-                    renderInput={(params) => <TextField 
-                        {...params} 
-                        label="Primary Host Server"
-                        variant='standard'
-                        />}
-                    sx={{ flexGrow : 1, display : 'flex'}}
-                />
-                <Box sx={{flexGrow : 1, display: 'flex'}} >
-                    <Typography 
-                        variant="caption"
-                        fontSize={16} 
-                        sx={{flexGrow : 1, display: 'flex', pt : 2, alignContent : "center"}}
-                    >
-                        {errorMessage}
-                    </Typography>
-                </Box>
+                    <Stack direction="row">
+                        <Autocomplete
+                            disablePortal
+                            freeSolo
+                            id="combo-box-demo"
+                            options={[]}
+                            renderInput={(params) => <TextField 
+                                {...params} 
+                                onChange={(event) => {setPrimaryHost(event.target.value)}}
+                                label="Primary Host Server"
+                                variant='standard'
+                                value={primaryHost}
+                                />}
+                                sx={{ flexGrow : 1, display : 'flex'}}
+                        />
+                        <IconButton size="large" onClick={async() => {await pingPrimaryHost()}}>
+                            <Tooltip title="ping to activate sign in box">
+                                <IconsMaterial.SyncAltSharp />
+                            </Tooltip>
+                        </IconButton>
+                    </Stack>
+                    <Stack sx={{flexGrow : 1, display: 'flex'}} >
+                        <Typography 
+                            variant="caption"
+                            fontSize={16} 
+                            sx={{flexGrow : 1, display: 'flex', pt : 2, alignContent : "center"}}
+                            
+                        >
+                            {errorMessage}
+                        </Typography>
+                        <Typography fontSize={12}>
+                            {errorMessage? "Look at console tab inside inspect window for more information if given information is not sufficient" : ""}
+                        </Typography >
+                    </Stack>
                 </Stack>
             </Container>   
             {/* ----- Icons for few widgets at the bottom ----- */}
@@ -192,7 +251,7 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                         <Tooltip title="RemoteObject client">
                             <IconButton
                                 size="large"    
-                                onClick={() => globalState.setGlobalLocation('/clients/remote-object/unsafe')}
+                                onClick={() => setGlobalLocation('/clients/remote-object/unsafe')}
                             >
                                 <IconsMaterial.SettingsEthernetTwoTone fontSize='large'/>
                             </IconButton>                
@@ -202,19 +261,17 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                         <Tooltip title="viewer for visualization parameter">
                             <IconButton
                                 size="large"    
-                                onClick={() => globalState.setGlobalLocation('/clients/visualization/unsafe')}
+                                onClick={() => setGlobalLocation('/clients/visualization/unsafe')}
                             >
                                 <IconsMaterial.TimelineTwoTone fontSize='large'/>
                             </IconButton>                
                         </Tooltip>
                     </Grid>
                     <Grid item>
-                        <Tooltip title='quick dashboard view'>
-                            <DashboardURLDialog globalState={globalState}/> 
-                        </Tooltip>
+                        <DashboardURLDialog /> 
                     </Grid>
                     <Grid item>
-                        <Tooltip title='goto daqpy repository at GitHub'>
+                        <Tooltip title='goto hololinked repository at GitHub'>
                             <IconButton
                                 size="large"    
                                 onClick={() => window.open('https://github.com/VigneshVSV/hololinked')}
@@ -225,7 +282,7 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
                     </Grid>
                 </Grid>
                 <Grid item>
-                    {globalState.appsettings.loginDisplayFooter ? 
+                    {globalState.appsettings.login.displayFooter ? 
                         <Footer 
                             sx={{ mt: 4, mb: 4 }} 
                             text={globalState.appsettings.login.footer} 
@@ -240,8 +297,9 @@ export const SignIn = observer(({ globalState } : { globalState : ApplicationSta
 
 
 
-const DashboardURLDialog = observer(({ globalState } : {globalState : ApplicationState}) => {
+const DashboardURLDialog = observer(() => {
 
+    const { globalState, setGlobalLocation } = useContext(AppContext) as AppProps
     const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
     const [autocompleteOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('DashboardURLDialogOptions')
     const [open, setOpen] = useState<boolean>(false)
@@ -267,7 +325,7 @@ const DashboardURLDialog = observer(({ globalState } : {globalState : Applicatio
         if(dashboardStateManager.current)
             dashboardStateManager.current.reset()
         dashboardStateManager.current = createHololinkedPortalStateManager('quick-dashboard-view', 'DEBUG', ErrorBackdrop as any, {
-            setGlobalLocation : globalState.setGlobalLocation,
+            setGlobalLocation : setGlobalLocation,
             setLocation : (route : string) => console.error(`local routing function invalid & unchanged after creation of state manager. requested route ${route} not possible.`)
         })
         let path : string
@@ -278,18 +336,20 @@ const DashboardURLDialog = observer(({ globalState } : {globalState : Applicatio
             path='/'
         setFetchSuccessful(fetchSuccess)
         globalState.setDashboard(dashboardStateManager.current, dashboardURL)
-        globalState.setGlobalLocation(path)
+        setGlobalLocation(path)
     }, [fetchData, dashboardStateManager])
 
 
     return (
         <>
-            <IconButton
-                size="large"
-                onClick={handleDashboardMenuOpen}
-            >
-                <IconsMaterial.DashboardTwoTone fontSize='large'/>
-            </IconButton>
+            <Tooltip title='quick dashboard view'>
+                <IconButton
+                    size="large"
+                    onClick={handleDashboardMenuOpen}
+                >
+                    <IconsMaterial.DashboardTwoTone fontSize='large'/>
+                </IconButton>
+            </Tooltip>
             <Dialog open={open} onClose={handleDashboardMenuClose} fullWidth maxWidth={errorMessage? 'lg' : 'md'}>
                 <DialogTitle>Quick Open Dashboard</DialogTitle>
                     <DialogContent>
@@ -367,11 +427,11 @@ const DashboardURLDialog = observer(({ globalState } : {globalState : Applicatio
                     : null}
                     <Stack>
                         <Stack direction="row">
-                            <Button onClick={() => globalState.setGlobalLocation('/view')}>Open Saved</Button>
+                            <Button onClick={() => setGlobalLocation('/view')}>Open Saved</Button>
                             <Button onClick={openDashboard}>Fetch and Open</Button>
                         </Stack>
                         <Stack direction="row" alignSelf={"flex-end"}>
-                            <Button onClick={() => globalState.setGlobalLocation('/view')}>Open Last Used</Button>
+                            <Button onClick={() => setGlobalLocation('/view')}>Open Last Used</Button>
                         </Stack>
                     </Stack> 
                 </DialogActions>

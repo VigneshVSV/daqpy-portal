@@ -1,13 +1,14 @@
 'use client'
 // Internal & 3rd party functional libraries
-import { useEffect, useState } from "react";
-import { AxiosResponse } from "axios";
+import React, { useCallback, useEffect, useState } from "react";
+import axios, { AxiosResponse } from "axios";
 // Custom functional libraries
-import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 // Internal & 3rd party component libraries
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, CircularProgress, Container,
-    FormControl, FormControlLabel, Grid, IconButton, InputAdornment, Link, OutlinedInput, Paper, 
-    TextField, Toolbar, Tooltip, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Checkbox, 
+    CircularProgress, Container, Dialog, Divider, FormControl, FormControlLabel, Grid, 
+    IconButton, InputAdornment, Link, OutlinedInput, Paper, Portal, Stack, TextField, Toolbar, 
+    Tooltip, Typography } from "@mui/material"
+import * as IconsMaterial from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
@@ -16,45 +17,66 @@ import LaunchTwoToneIcon from '@mui/icons-material/LaunchTwoTone';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 // Custom component libraries 
 import { RootLogger } from "./app-state"
+import { ApplicationState } from "../mobx/state-container";
 
 
 
-export const AddPage = (props : any) => {
+export const AddPage = ({ globalState } : { globalState : ApplicationState }) => {
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [URL, setURL] = useState('http://localhost:8080/pages/sample')
+    const [errorMessage, setErrorMessage] = useState('')
+    const [URL, setURL] = useState('')
 
     const onSaveAndOpen = (event : any) => {
         RootLogger.logTraceMessage("AddPage", "unknown", "Save and Open not implemented yet")
     }
 
-    const onSave = (event : any) => {
-        RootLogger.logTraceMessage("AddPage", "unknown", "Save not implemented yet")
-    }
+    const savePage = useCallback((event : React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        let errMsg = ''
+        const sendPageToServer = async() => {
+            try {
+                const data = new FormData(event.currentTarget);
+                const response = await axios.post(`${globalState.primaryHostServer}/dashboards`, {
+                        name : data.get('name'),
+                        URL : data.get('URL'),
+                        description : data.get('description'),
+                        json : ''
+
+                    })
+                if(response.status !== 200)
+                    errMsg = `could not save dashboard to database - ${response.status}` 
+                
+            } catch (error : any) {
+                errMsg = `could not save dashboard to database - ${error.message}` 
+            }
+            setErrorMessage(errMsg)
+        }
+        sendPageToServer()
+    }, [])
 
     return (
-        <Container component="main" maxWidth="sm" sx={{ mb: 2 }}>
-            <Toolbar />        
-            <Paper 
-                variant='outlined'
-                sx={{ my: { xs: 12, md: 12 }, p: { xs: 2, md: 2 } }}
+        <Container component="main" maxWidth="sm">  
+            <FormControl>
+                <Typography 
+                    align="center" 
+                    variant="button"
+                    fontSize={14}
+                    sx={{ pt : 2 }}
                 >
-                <FormControl>
-                    <Typography 
-                        component="h2" 
-                        variant="h4" 
-                        align="center" 
-                        >
-                        New Page
-                    </Typography>
-                    <Grid container spacing={3}>
-                        <Grid item xs={6}>
+                    New Page
+                </Typography>
+                <Box component="form" onSubmit={savePage} noValidate>
+                    <Grid container spacing={3} columns={12}>
+                        <Grid item xs={12} md={12} lg={12} sm={12} xl={12}>
                             <TextField 
                                 id="add-page-name-textfield" 
                                 label="Name" 
                                 variant="standard" 
-                                />
+                                name="name"
+                                type="text"
+                                fullWidth
+                            />
                         </Grid>
                         <Grid item xs={12}>
                             <TextField 
@@ -64,7 +86,9 @@ export const AddPage = (props : any) => {
                                 label="Description" 
                                 variant="outlined"
                                 fullWidth
-                                />
+                                name="description"
+                                type="text"
+                            />
                         </Grid>
                         <Grid item xs={12}>
                             <TextField 
@@ -74,9 +98,11 @@ export const AddPage = (props : any) => {
                                 label="URL" 
                                 variant="outlined" 
                                 fullWidth    
-                                placeholder = "Enter URL of UI components server"
-                                defaultValue="http://localhost:8080/pages/sample"
+                                placeholder="Enter URL of UI components server"
+                                defaultValue=""
                                 onChange={(event) => setURL(event.target.value)}
+                                name="URL"
+                                type="text"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -86,59 +112,73 @@ export const AddPage = (props : any) => {
                             />
                         </Grid>
                         {/* <Grid container direction='row' spacing={3}> */}
-
                         <Grid item xs={4} rowSpacing={0}>
-                            <Button
-                                onClick={onSaveAndOpen}
-                                >
+                            <Button onClick={onSaveAndOpen} disabled >
                                 Save and Open
                             </Button>
                         </Grid>
-                        <Grid item xs={4} rowSpacing={0}>
-                            <Button
-                                // onClick={onQuickView}
-                            >
-                                Quick View
+                        <Grid item xs={5} rowSpacing={0}>
+                            <Button disabled>
+                                Quick View in New Tab
                             </Button>
                         </Grid>
-                        <Grid item xs={4} rowSpacing={0}>
-                            <Button
-                                onClick={onSave}
-                            >
+                        <Grid item xs={3} rowSpacing={0}>
+                            <Button type="submit">
                                 Just Save
                             </Button>
                         </Grid>
-                        { loading || error.length > 0 ? <Grid item xs={12} rowSpacing={0}>
-                            <Box sx={{pl : 0.5}}> 
-                            {loading ? <CircularProgress size={25} /> : null}
-                            {error.length > 0 ? <Typography fontSize={12} fontWeight={700}>{error}</Typography> : null}
-                            </Box>
-                        </Grid> : null}
+                        { 
+                            loading || errorMessage.length > 0 ? 
+                                <Grid item xs={12} rowSpacing={0}>
+                                    <Box sx={{pl : 0.5}}> 
+                                        {loading ? <CircularProgress size={25} /> : null}
+                                        {errorMessage.length > 0 ? 
+                                            <Typography fontSize={12} fontWeight={700} sx={{ color : 'red' }}>
+                                                {errorMessage}
+                                            </Typography> 
+                                            : null}
+                                    </Box>
+                                </Grid> : null
+                        }
                     </Grid>
-                </FormControl>
-            </Paper>
+                </Box>
+            </FormControl>
         </Container>
     )
 }
 
 
 
-export const ShowPages = (props : any) => {
+type Dashboard = {
+    name : string 
+    description : string 
+    URL : string 
+    JSON? : object
+}
 
-    const [pages, setPages] = useState([])
-    const setGlobalLocation = props.setGlobalLocation
+export const ShowPages = ({ globalState, setGlobalLocation } : { globalState : ApplicationState, setGlobalLocation : any }) => {
+
+    const [pages, setPages] = useState<Dashboard[]>([])
+    const [openDialog, setOpenDialog] = useState<boolean>(false)
    
-    useEffect(() => {
-        const fetchData = async() => {
-            const response = await asyncRequest({
-                baseURL : 'http://localhost:8080',
-                url : '/react-client-utilities/utils/u-iclient/pages/list',
-                method : 'get'
-            }) as AxiosResponse
-            // pages = response.data
-            setPages(response.data)
+    const fetchPages = useCallback(async() => {
+        let _pages = [] 
+        try {
+            if(globalState.primaryHostServer){
+                const response = await axios.get(`${globalState.primaryHostServer}/dashboards`) as AxiosResponse
+                if(response.status === 200)
+                    _pages = response.data
+            }
+        } catch(error) {
+
         }
-        fetchData() 
+        // pages = response.data
+        setPages(_pages)
+    }, [])
+
+    console.log("pages are", pages)
+    useEffect(() => {
+        fetchPages() 
     }, [])
    
     return (
@@ -146,70 +186,83 @@ export const ShowPages = (props : any) => {
             <Grid container direction = 'row' columns={3}>
                 {/* {['Recent', 'Pages', 'Groups'].map((group : string, index : any) => {
                     <div key={'Pages'+index.toString()}> */}
-                <Grid item xs ={1}>
-
-                <Grid container direction = 'column'>
-                    <Grid item>
-                        <Typography variant='overline'>Pages</Typography>
-                    </Grid>
-                    <Grid item>
-
-                    {pages.map((page : any, index) => {
-                        return (
-                            <Accordion key={index.toString()}>
-                            <AccordionSummary 
-                                expandIcon = {<ExpandMoreIcon />}
-                            >
-                                <Typography sx = {{pt : 1}}>{page[1]}</Typography>
-                                <Box display='flex' justifyContent='flex-end' sx={{flexGrow : 1}}>
-                                    <IconButton>
-                                        <OpenInNewOffTwoToneIcon></OpenInNewOffTwoToneIcon>
-                                    </IconButton>
-                                    <IconButton onClick={() => {
-                                        props.globalRouter.pageurl = page[3]
-                                        setGlobalLocation('/Page/'+page[1])
-                                    }}>
-                                        <LaunchTwoToneIcon></LaunchTwoToneIcon>
-                                    </IconButton>
-                                </Box>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography>{page[2]}</Typography>
-                                <Typography fontSize={14} variant='overline'>
-                                    URL :  
-                                </Typography>
-                                <Link target="_blank" rel="noopener noreferrer" href={page[3]} underline='hover' variant='body2' sx = {{pl : 1}}>
-                                    {page[3]}
-                                </Link>                                 
-                                <Box display='flex' justifyContent="flex-start" sx={{flexGrow:1, pt:1}}>
-                                    <Button variant='outlined' onClick={() => {
-                                                props.globalRouter.pageurl = page[3]
-                                                setGlobalLocation('/Page/'+page[1])
-                                    }}>Open</Button>
-                                    <Box  display='flex' justifyContent="flex-end" sx={{flexGrow:3}}>
-                                        <Tooltip title='edit'>
-                                            <IconButton >
-                                                <EditTwoToneIcon></EditTwoToneIcon> 
-                                            </IconButton>
-                                        </Tooltip>
-                                        <IconButton>
-                                            <RefreshTwoToneIcon></RefreshTwoToneIcon>
-                                        </IconButton>
-                                        <IconButton>
-                                            <DeleteTwoToneIcon></DeleteTwoToneIcon>
-                                        </IconButton>
-                                    </Box>
-                                </Box>
-
-                            </AccordionDetails>
-                            </Accordion>
-                    )
-                })}
+                <Grid item lg={3} xs={3} xl ={3} sm={3} md={3} >
+                    <IconButton size="large" onClick={() => setOpenDialog(true)}>
+                        <IconsMaterial.AddTwoTone fontSize="large" />
+                    </IconButton>
+                    <IconButton size="large" onClick={async() => fetchPages()}>
+                        <IconsMaterial.Refresh fontSize="large" />
+                    </IconButton>
+                </Grid>
+                <Grid item xs={1}>
+                    <Grid container direction = 'column'>
+                        <Grid item sx={{ pt : 5 }}>
+                            {pages.length > 0 ? pages.map((page : Dashboard, index) => {
+                                return (
+                                    <Accordion key={index.toString()}>
+                                        <AccordionSummary expandIcon = {<ExpandMoreIcon />} >
+                                            <Typography sx = {{pt : 1}}>
+                                                {page.name} <br/>
+                                                <Typography variant="caption">{page.description}</Typography>
+                                            </Typography>
+                                            <Box display='flex' justifyContent='flex-end' sx={{ flexGrow : 1 }}>
+                                                <IconButton size="large">
+                                                    <OpenInNewOffTwoToneIcon></OpenInNewOffTwoToneIcon>
+                                                </IconButton>
+                                                <IconButton size="large">
+                                                    <LaunchTwoToneIcon></LaunchTwoToneIcon>
+                                                </IconButton>
+                                            </Box>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Typography fontSize={14} variant='overline'>
+                                                URL :  
+                                            </Typography>
+                                            <Link 
+                                                href={page.URL}
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                underline='hover' 
+                                                variant='body2' 
+                                                sx = {{pl : 1}}
+                                            >
+                                                {page.URL}
+                                            </Link>                                 
+                                            <Box display='flex' justifyContent="flex-start" sx={{flexGrow:1, pt:1}}>
+                                                <Button variant='outlined'>Open</Button>
+                                                <Box  display='flex' justifyContent="flex-end" sx={{flexGrow:3}}>
+                                                    <Tooltip title='edit'>
+                                                        <IconButton >
+                                                            <EditTwoToneIcon></EditTwoToneIcon> 
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <IconButton>
+                                                        <RefreshTwoToneIcon></RefreshTwoToneIcon>
+                                                    </IconButton>
+                                                    <IconButton>
+                                                        <DeleteTwoToneIcon></DeleteTwoToneIcon>
+                                                    </IconButton>
+                                                </Box>
+                                            </Box>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                )
+                            })
+                            : 
+                            <Typography fontSize={16} variant="button">
+                                None to show. Click plus to add. 
+                            </Typography>}
+                        </Grid>
                     </Grid>
                 </Grid>
-                </Grid>
-            </Grid>
-            </>
+            </Grid> 
+            <Dialog open={openDialog}>
+                <AddPage globalState={globalState} />
+                <Stack alignSelf='flex-end' sx={{ pb : 1, pr : 2 }}>
+                    <Button onClick={() => setOpenDialog(false)}>Close</Button>
+                </Stack>
+            </Dialog>
+        </>
     )
 
 }

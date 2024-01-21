@@ -2,8 +2,8 @@
 import { Route, Router, useLocation, useRouter } from "wouter";
 // Custom functional libraries
 // Internal & 3rd party component libraries
-import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-    useTheme, AppBar, Toolbar } from "@mui/material";
+import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, 
+    ListItemText, useTheme } from "@mui/material";
 import * as IconsMaterial from '@mui/icons-material/';
 // Custom component libraries
 import { ApplicationState } from "../mobx/state-container";
@@ -139,9 +139,9 @@ export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRou
     const router = useRouter();
     const nestedBaseRoute = `${router.base}${baseRoute}`;
     const [parentLocation] = useLocation()
-
+   
     if (!parentLocation.startsWith(nestedBaseRoute)) return null;
-
+    
     return (
         <Router base={nestedBaseRoute} key={nestedBaseRoute}>
             <Box sx={{ display : 'flex', flexGrow : 1 }}>
@@ -175,7 +175,7 @@ export const Overview = ( { globalState, baseRoute, setGlobalLocation, globalRou
                     sx={{ display : 'flex', flexGrow : 1, p : 3 }}
                 >
                     <Route path='/pages/add'>
-                        <AddPage setGlobalLocation={setGlobalLocation}></AddPage>
+                        <AddPage globalState={globalState} setGlobalLocation={setGlobalLocation}></AddPage>
                     </Route>
                     <Route path='/pages'>
                         <ShowPages globalState={globalState} setGlobalLocation={setGlobalLocation} globalRouter={globalRouter}></ShowPages>

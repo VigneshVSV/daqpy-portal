@@ -124,10 +124,8 @@ const PRIMARY_HOST = 'PRIMARY_HOST'
 
 export class ApplicationState {
 
-    loggedIn : boolean
     appsettings : any
     primaryHostServer : PythonServer | null 
-    additionalHostServers : PythonServer[] 
     servers  : Array<PythonServer>
     HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData }
     dashboardStateManager : StateManager | null
@@ -135,9 +133,7 @@ export class ApplicationState {
     setGlobalLocation : Function | null
 
     constructor() {
-        this.loggedIn    = false
         this.primaryHostServer = null
-        this.additionalHostServers = []
         this.appsettings = defaultAppSettings
         this.servers = []
         this.HTTPServerWizardData = {
@@ -158,30 +154,19 @@ export class ApplicationState {
         this.setGlobalLocation = null
 
         makeObservable(this, {
-                loggedIn    : observable,
                 appsettings : observable,
                 dashboardStateManager : observable,
                 dashboardURL : observable,
                 setPrimaryHostServer : action,
                 updateSettings : action,
-                login       : action,
-                logout      : action,
                 setDashboard : action
             }
         )
     }
 
-    login() {
-        this.loggedIn = true
-    }
-
-    logout() {
-        this.loggedIn = false
-    }
-
     async updateSettings(field : string, value : any) {
         const response = await asyncRequest({
-            url : 'dashboard-util/app/settings/edit', 
+            url : 'settings', 
             method : 'post',
             baseURL : (this.primaryHostServer as PythonServer).qualifiedIP,
             data : {
@@ -199,6 +184,9 @@ export class ApplicationState {
     }
 
     async setPrimaryHostServer(serverURL : string) {
+        // @ts-ignore
+        this.primaryHostServer = serverURL
+        return
         await Promise.all([axios({
             url : 'dashboard-util/app/info/all', 
             method : 'get',
