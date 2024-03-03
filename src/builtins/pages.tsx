@@ -36,13 +36,15 @@ export const AddPage = () => {
         const sendPageToServer = async() => {
             try {
                 const data = new FormData(event.currentTarget);
-                const response = await axios.post(`${globalState.primaryHostServer}/dashboards`, {
+                const response = await axios.post(
+                    `${globalState.primaryHostServer}/dashboards`,
+                    {
                         name : data.get('name'),
                         URL : data.get('URL'),
                         description : data.get('description'),
                         json : ''
-
-                    })
+                    },
+                    { withCredentials: true })
                 if(response.status !== 200)
                     errMsg = `could not save dashboard to database - ${response.status}`
                 
@@ -166,7 +168,10 @@ export const Pages = () => {
         let _pages = [], response = null, errMsg = ''
         try {
             if(globalState.primaryHostServer){
-                response = await axios.get(`${globalState.primaryHostServer}/dashboards`) as AxiosResponse
+                response = await axios.get(
+                        `${globalState.primaryHostServer}/dashboards`,
+                        { withCredentials: true }
+                    ) as AxiosResponse
                 if(response.status === 200)
                     _pages = response.data
             }

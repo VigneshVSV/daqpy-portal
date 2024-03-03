@@ -14,16 +14,8 @@ import { RemoteObjectViewer } from "./remote-object-client/view";
 import { RemoteObjectClientState } from "./remote-object-client/remote-object-client-state";
 import { useContext } from "react";
 import { AppContext, AppProps } from "../App";
+import axios from "axios";
 
-
-
-// const DrawerHeader = styled('div')(({ theme }) => ({
-//     display: 'flex',
-//     alignItems: 'center',
-//     padding: theme.spacing(0, 1),
-//     ...theme.mixins.toolbar, // necessary for content to be below app bar
-//     justifyContent: 'flex-end',
-// }));
 
 
 type DrawerOptionProps = {
@@ -31,7 +23,7 @@ type DrawerOptionProps = {
     icon : JSX.Element 
     path : string
     globalPath? : boolean
-    onClick? : (globalState : ApplicationState) => void | null
+    onClick? : (globalState : ApplicationState) => void
 }
 
 const DrawerTitle = (props : any) => {
@@ -47,7 +39,7 @@ const DrawerTitle = (props : any) => {
                     paddingLeft : 2,
                     color : theme.palette.grey[600]
                 }}
-                />
+            />
         </List>
     )
 }
@@ -108,12 +100,12 @@ const Panels : { [key : string] : DrawerOptionProps[] } = {
         {
             text: 'Remote Object Wizard',
             icon: <IconsMaterial.TerminalTwoTone />,
-            path: '/objects'
+            path: '/overview/objects'
         },
         {
             text: 'HTTP Server Wizard',
             icon: <IconsMaterial.AccountTreeTwoTone />,
-            path: '/servers'
+            path: '/overview/servers'
         },
         {
             text: 'Log Viewer',
@@ -126,13 +118,23 @@ const Panels : { [key : string] : DrawerOptionProps[] } = {
             text: 'Logout',
             icon: <IconsMaterial.LogoutTwoTone />,
             path: '/',
-            onClick : (globalState : ApplicationState) => { globalState.loggedIn = false }
+            onClick : (globalState : ApplicationState) => { 
+                const logout = async () => {
+                    try {
+                        const response = await axios.post(
+                            `${globalState.primaryHostServer}/logout`,
+                            {},
+                            { withCredentials : true } 
+                        )   
+                        if (response.status !== 200)
+                            console.log("could not logout")
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+                logout()
+            }
         },
-    //     {
-    //         text : 'Account Information',
-    //         icon : <IconsMaterial.AccountCircleTwoTone />,
-    //         path : '/login-info'
-    //     },
     ]
 }
 
@@ -189,10 +191,10 @@ export const Overview = ( { baseRoute } : OverviewProps ) => {
                         <Pages />
                     </Route>
                     <Route path='/settings'>
-                        <AppSettings globalState={globalState}></AppSettings>
+                        <AppSettings globalState={globalState} />
                     </Route>
                     <Route path='/servers'>
-                        <ServerWizard globalState={globalState}></ServerWizard>
+                        <ServerWizard globalState={globalState} />
                     </Route>
                     <Route path='/objects'>
                         <RemoteObjectViewer

@@ -40,14 +40,7 @@ const App = () => {
                                     globalRouter : router,
                                     setGlobalLocation : setLocation
                                 })
-                                
-    useEffect(() => {
-        let path = '/' 
-        if(globalProps.globalState.loggedIn) 
-            path = (location !== '/' || location.includes('unsafe')) ? location : '/overview' 
-            // must be checked for electron app        
-        setLocation(path)
-    }, []) 
+    
 
     return (
         <Box id='main-layout' sx={{ display : 'flex', flexGrow : 1, alignItems : 'center'}}>

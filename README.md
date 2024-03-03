@@ -13,6 +13,3 @@ admin portal in ReactJS for [`hololinked`](https://github.com/VigneshVSV/hololin
 ### Documentation
 
 Visit [`hololinked website`](https://hololinked.dev) for upcoming documentation.
-
-
-

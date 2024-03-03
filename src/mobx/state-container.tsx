@@ -43,7 +43,7 @@ export type ApplicationSettings = {
     }
 }
 
-export const defaultAppSettings = {
+export const defaultAppSettings : ApplicationSettings = {
     dashboards : {
         deleteWithoutAsking : true,
         showRecentlyUsed : true,
@@ -174,14 +174,6 @@ export class ApplicationState {
         })
     }
 
-    get loggedIn () {
-        return JSON.parse(window.sessionStorage.getItem('logged-in') as string)
-    }
-
-    set loggedIn (value : boolean) {
-        window.sessionStorage.setItem('logged-in', JSON.stringify(value))
-    }
-
     static createObjectFromSession() : ApplicationState {
         let state = new ApplicationState()
         let primaryHostServer = window.sessionStorage.getItem('primaryHostServer')
@@ -191,9 +183,6 @@ export class ApplicationState {
         let appsettings = window.sessionStorage.getItem('appsettings')
         if(appsettings)
             state.appsettings = JSON.parse(appsettings)
-        let loggedIn = window.sessionStorage.getItem('loggedIn')
-        if(loggedIn)
-            state.loggedIn = JSON.parse(loggedIn)
         return state
     }
 

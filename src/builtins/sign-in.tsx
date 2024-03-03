@@ -8,7 +8,7 @@ import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
     IconButton, Stack, Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, 
-    Tooltip, LinearProgress } from '@mui/material';
+    Tooltip, LinearProgress, FormControlLabel, Checkbox } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
@@ -63,10 +63,9 @@ export const SignIn = observer(() => {
                 }
                 loginDisabled = false
             } catch(error : any) {
-                if(error.response) 
-                    errMsg = `host server fetch failed - ${error.message} - response status - ${error.response.status}`
-                else 
-                    errMsg = `host server fetch failed - ${error.message}`
+                errMsg = error.response?
+                    `host server fetch failed - ${error.response.statusText} - response status - ${error.response.status}` : 
+                    `host server fetch failed - ${error.message}`
             }
         }
         setLoginDisabled(loginDisabled)
@@ -75,21 +74,22 @@ export const SignIn = observer(() => {
   
     const pingPrimaryHost = useCallback(async(host : string = '') => {
         host = host ? host : primaryHost
-        let errMsg = '', loginDisabled = true, response = null
+        let errMsg = '', loginDisabled = true
         setLoginLoading(true)
         setLoginMessage('pinging...')
         if(host) {
+            if(host.endsWith('/'))
+                host = host.slice(0, -1)
             try {
-                response = await axios.get(host)
+                const response = await axios.get(host)
                 if(response.status === 200) {
                     loginDisabled = false
                     globalState.setPrimaryHostServer(host)
-                    console.log("primary host server set", host)
                 } else {
                     errMsg = response.statusText
                 }
             } catch(error : any) {
-                errMsg = response? response.statusText :  error.message
+                errMsg = error.response? error.response.statusText :  error.message
             }
         }
         else {
@@ -112,22 +112,28 @@ export const SignIn = observer(() => {
         setLoginLoading(true)
         setLoginMessage('logging in...')
         const data = new FormData(event.currentTarget);
-        let path = '/'
+        let path = '/', errMsg = '' 
         try {
-            const response = await axios.post(`${globalState.primaryHostServer}/login`, {
+            const response = await axios.post(
+                `${globalState.primaryHostServer}/login`, 
+                {
                     email: data.get('email'),
                     password: data.get('password'),
-                });
-            if(response.status === 200) {
-                path = '/overview'
-                globalState.loggedIn = true
-            }
-            console.log(response.headers)
-        } catch(error) {
+                },
+                { withCredentials : true }
+                );
+            if(response.status === 200) 
+                path = '/overview'                
+        } catch(error : any) {
             console.log(error)
+            if(error.response && error.response.statusText)
+                errMsg = error.response.statusText
+            else 
+                errMsg = error.message
         }
         setLoginLoading(false)
         setLoginMessage('')
+        setErrorMessage(errMsg)
         setGlobalLocation(path)
     }, [globalState])
 
@@ -175,19 +181,17 @@ export const SignIn = observer(() => {
                             autoComplete="current-password"
                             disabled={loginDisabled}
                         />
-                        {/* 
-                            <FormControlLabel
-                                control={
-                                    <Checkbox 
-                                        value="remember" 
-                                        color="primary" 
-                                        disabled={loginDisabled} 
-                                    />
-                                }
-                                label="Remember me"
-                                id='remember-me-checkbox'
-                            /> 
-                        */}
+                        <FormControlLabel
+                            control={
+                                <Checkbox 
+                                    value="remember" 
+                                    color="primary" 
+                                    disabled={loginDisabled} 
+                                />
+                            }
+                            label="Remember me"
+                            id='remember-me-checkbox'
+                        /> 
                         {loginLoading? 
                             <Box sx={{ pt : 2 , pb : 2 }}>
                                 <LinearProgress  />
@@ -257,6 +261,11 @@ export const SignIn = observer(() => {
                                 />}
                                 sx={{ flexGrow : 1, display : 'flex'}}
                         />
+                        <IconButton size="large" onClick={() =>  window.open(primaryHost, "_blank")}>
+                            <Tooltip title="save primary host locally in browser">
+                                <IconsMaterial.OpenInNewTwoTone />
+                            </Tooltip>
+                        </IconButton>
                         <IconButton size="large" onClick={async() => {await pingPrimaryHost()}}>
                             <Tooltip title="ping to activate sign in box">
                                 <IconsMaterial.SyncAltSharp />
@@ -320,6 +329,13 @@ export const SignIn = observer(() => {
                             >
                                 <IconsMaterial.GitHub fontSize='large'/>
                             </IconButton>                
+                        </Tooltip>
+                    </Grid>
+                    <Grid item>
+                        <Tooltip title="generate configuration file used by global_config in hololinked.server">
+                            <IconButton size="large">
+                                <IconsMaterial.SettingsSuggestTwoTone fontSize='large' />
+                            </IconButton>
                         </Tooltip>
                     </Grid>
                 </Grid>

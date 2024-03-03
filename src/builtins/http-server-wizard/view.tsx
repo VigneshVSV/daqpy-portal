@@ -35,6 +35,8 @@ const tabFields = ['Status', 'New Eventloop', 'New Remote Object', 'New HTTP Ser
 export const ServerWizard = ({ globalState } : AppState) => {
 
     const [server, setServer] = useState<PythonServer | null>(globalState.servers[0]? globalState.servers[0] : null);
+
+    console.log("I am here", server)
        
     const handleServerChange = (server : string) => {
         for(let server_ of globalState.servers){
