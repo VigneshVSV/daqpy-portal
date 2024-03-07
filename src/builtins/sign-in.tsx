@@ -46,6 +46,9 @@ function Footer(props: any) {
 export const SignIn = observer(() => {
 
     const { globalState, setGlobalLocation } = useContext(AppContext) as AppProps
+    const [hasAutoLoginCredential, _] = useState(document.cookie.split("; ").find((row) => row.startsWith("user="))?.split("=")[1])
+    console.log("cookies", document.cookie)
+    // https://stackoverflow.com/questions/51109559/get-cookie-with-react
     const [primaryHost, setPrimaryHost] = useState<string>('')    
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
@@ -89,12 +92,12 @@ export const SignIn = observer(() => {
                     errMsg = response.statusText
                 }
             } catch(error : any) {
-                errMsg = error.response? error.response.statusText :  error.message
+                errMsg = error.response? error.response.statusText :  error.message + " - check CORS, https certificate, reachability etc."
             }
         }
         else {
             loginDisabled = true
-            errMsg = 'set primary host'
+            errMsg = 'set system host'
         }
         setLoginMessage('')
         setLoginLoading(false)
@@ -115,14 +118,13 @@ export const SignIn = observer(() => {
         let path = '/', errMsg = '' 
         try {
             const response = await axios.post(
-                `${globalState.primaryHostServer}/login`, 
-                {
+                `${globalState.primaryHostServer}/login`, {
                     email: data.get('email'),
                     password: data.get('password'),
-                },
-                { withCredentials : true }
-                );
-            if(response.status === 200) 
+                    rememberme : data.get('rememberme'),
+                }, { withCredentials : true }
+            );
+            if(response.status === 204) 
                 path = '/overview'                
         } catch(error : any) {
             console.log(error)
@@ -182,6 +184,9 @@ export const SignIn = observer(() => {
                             disabled={loginDisabled}
                         />
                         <FormControlLabel
+                            id='remember-me-checkbox'
+                            label="Remember me"
+                            name="rememberme"
                             control={
                                 <Checkbox 
                                     value="remember" 
@@ -189,8 +194,6 @@ export const SignIn = observer(() => {
                                     disabled={loginDisabled} 
                                 />
                             }
-                            label="Remember me"
-                            id='remember-me-checkbox'
                         /> 
                         {loginLoading? 
                             <Box sx={{ pt : 2 , pb : 2 }}>
@@ -205,8 +208,18 @@ export const SignIn = observer(() => {
                                 sx={{ mt: 3, mb: 2 }}
                                 disabled={loginDisabled}
                             >
-                                {loginDisabled? "Select Primary Host Server To Sign In" : "Sign In"}
+                                {loginDisabled? "Select system host Server To Sign In" : "Sign In"}
                             </Button>
+                        }
+                        {hasAutoLoginCredential?
+                            <Button
+                                id='auto-login-button'
+                                variant='contained'
+                            >
+                                Auto Login
+                            </Button>
+                            : null
+
                         }
                         <Grid container direction="row">
                             <Grid item>
@@ -233,7 +246,7 @@ export const SignIn = observer(() => {
                     </Box>
                 </Box>
             </Container>
-            {/* ----- primary host server selector component ----- */ }
+            {/* ----- system host server selector component ----- */ }
             <Container 
                 id='primary-host-server-selector'
                 disableGutters
@@ -255,14 +268,14 @@ export const SignIn = observer(() => {
                                 <TextField 
                                     {...params} 
                                     onChange={(event) => {setPrimaryHost(event.target.value)}}
-                                    label="Primary Host Server"
+                                    label="Type/Select System Host Server"
                                     variant='standard'
-                                    value={primaryHost}
+                                    value={primaryHost? primaryHost : primaryHostOptions? primaryHostOptions[0] : ""}
                                 />}
                                 sx={{ flexGrow : 1, display : 'flex'}}
                         />
                         <IconButton size="large" onClick={() =>  window.open(primaryHost, "_blank")}>
-                            <Tooltip title="save primary host locally in browser">
+                            <Tooltip title="open system host in new tab">
                                 <IconsMaterial.OpenInNewTwoTone />
                             </Tooltip>
                         </IconButton>
@@ -272,7 +285,7 @@ export const SignIn = observer(() => {
                             </Tooltip>
                         </IconButton>
                         <IconButton size="large" onClick={() => {modifyOptions(primaryHost, 'ADD')}}>
-                            <Tooltip title="save primary host locally in browser">
+                            <Tooltip title="save system host locally in browser">
                                 <IconsMaterial.SaveTwoTone />
                             </Tooltip>
                         </IconButton>

@@ -7,8 +7,8 @@ import PushPinTwoToneIcon from '@mui/icons-material/PushPinTwoTone';
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ObjectInspector } from "react-inspector";
-// import { ModuleRegistry } from '@ag-grid-community/core';
-// import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
+import { ModuleRegistry } from '@ag-grid-community/core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-alpine.css';
 import '@ag-grid-community/styles/ag-theme-material.css'
@@ -16,52 +16,61 @@ import './styles.css'
 // Custom component libraries 
 
 
-// ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
+ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
 
 
 
 export const SampleRowData = [
     {
+        id : 1,
         timestamp : "20:11",
         level : "DEBUG",
         message : "This is a debug message"
     },
     {
+        id : 2,
         timestamp : "20:18",
         level : "DEBUG",
         message : "This is another debug message 1"
     },
     {
+        id : 3,
         timestamp : "20:19",
         level : "DEBUG",
         message : "This is a yet another somewhat unnecessarily made long debug message with garbage - lkajsdhflksjadhfljksadhjfkl hjklsfhkjlsahfjklhsdjklfhjklsafjklhflj kljahsdlfkjhsadlkjfh lkjsdh ljklsdhafjklhsadlkfhsdajklfhjklas lk sdjfklhasljkhflsadh "
     },
     {
+        id : 4,
         timestamp : "20:12",
         level : "INFO",
         message : "This is a info message"
     },
     {
+        id : 5,
         timestamp : "20:15",
         level : "INFO",
         message : "This is another info message 1"
     },
     {
+        id : 6,
         timestamp : "20:16",
         level : "INFO",
         message : "This is a yet another somewhat unnecessarily made info debug message with garbage - lkajsdhflksjadhfljksadhjfkl hjklsfhkjlsahfjklhsdjklfhjklsafjklhflj kljahsdlfkjhsadlkjfh lkjsdh ljklsdhafjklhsadlkfhsdajklfhjklas lk sdjfklhasljkhflsadh "
     },
     {
+        id : 7,
         timestamp : "20:13",
         level : "ERROR",
         message : "This is a debug message"
     },
     {
+        id : 8,
         timestamp : "20:14",
         level : "ERROR",
         message : "This is another debug message 1"
     },
     {
+        id : 9,
         timestamp : "20:17",
         level : "ERROR",
         message : "This message fillls the space -klajsdfkjlashfjkl aksdjhfkjlshdfjklh lks slkdjfhkasldhfkjlsadf lkasdjhfklsdahfkljsh skdljfhjksaldhfjkl alskdjhfkljasdhflkjsh klasdhfasdhkljfhjkasdhl sadkljfhskldhfjl  lkajsdhflksjadhfljksadhjfkl hjklsfhkjlsahfjklhsdjklfhjklsafjklhflj kljahsdlfkjhsadlkjfh lkjsdh ljklsdhafjklhsadlkfhsdajklfhjklas lk sdjfklhasljkhflsadh "
@@ -125,7 +134,7 @@ export const ROTimestampCell = (props : any) => {
     )
 }
 
-export const webGUITimestampCell = (props : any) => {
+export const WebGUITimestampCell = (props : any) => {
 
     const cellValue : string = props.valueFormatted ? props.valueFormatted : props.value
     return (
@@ -147,7 +156,7 @@ const logColorLevels = {
     'FAULT' : 'red'
 }
 
-export const coloredLevel = (props : any) => {
+export const ColoredLevel = (props : any) => {
 
     const cellValue = props.valueFormatted ? props.valueFormatted : props.value
     
@@ -164,7 +173,7 @@ export const coloredLevel = (props : any) => {
     )
 }
 
-export const coloredBackendMessage = (props : any) => {
+export const ColoredBackendMessage = (props : any) => {
 
     const cellValue = props.valueFormatted ? props.valueFormatted : props.value
     return (
@@ -180,7 +189,7 @@ export const coloredBackendMessage = (props : any) => {
     )
 }
 
-export const coloredFrontendMessage = (props : any) => {
+export const ColoredFrontendMessage = (props : any) => {
 
     const cellValue = props.value
     // console.log(cellValue)
@@ -241,6 +250,7 @@ export const LogTable = (props : LogTableProps) => {
                 _rowData[i].id = i 
         }
         setRowData(_rowData)
+        console.log("new row data", _rowData)
     }, [props.rowData, props.fromServerResponse])
 
     const gridRef = useRef<any>()
@@ -296,13 +306,13 @@ export const useRemoteObjectLogColumns = (fontSize : string = "16px") => {
         },
         { 
             colId : 'level', headerName : 'LEVEL', field : 'level', initialWidth : 135, maxWidth : 250, 
-            suppressSizeToFit : true, cellRenderer : coloredLevel,
+            suppressSizeToFit : true, cellRenderer : ColoredLevel,
             cellStyle : { fontSize : fontSize },
             resizable : true, filter : true, floatingFilter: true, sortable : true 
         }, 
         { 
             colId : 'message', headerName : 'MESSAGE', field : 'message', wrapText : true, autoHeight : true, 
-            cellRenderer : coloredBackendMessage,
+            cellRenderer : ColoredBackendMessage,
             cellStyle : { fontSize : fontSize },
             resizable : true, filter : true, floatingFilter: true, sortable : true
         },
@@ -320,13 +330,13 @@ export function useRendererLogColumns(fontSize : string = "16px") {
     const columnDefs = useMemo(() => [
         { 
             colId : 'timestamp', headerName : 'TIMESTAMP', field : 'timestamp', initialWidth : 175, maxWidth : 300,
-            suppressSizeToFit : true, cellRenderer : webGUITimestampCell, 
+            suppressSizeToFit : true, cellRenderer : WebGUITimestampCell, 
             cellStyle : { fontSize : fontSize },
             resizable : true, filter : true, floatingFilter: true, sortable : true
         },
         { 
             colId : 'level', headerName : 'LEVEL', field : 'level', initialWidth : 135, maxWidth : 250, 
-            suppressSizeToFit : true, cellRenderer : coloredLevel,
+            suppressSizeToFit : true, cellRenderer : ColoredLevel,
             cellStyle : { fontSize : fontSize },
             resizable : true, filter : true, floatingFilter: true, sortable : true 
         },
@@ -342,7 +352,7 @@ export function useRendererLogColumns(fontSize : string = "16px") {
         }, 
         { 
             colId : 'message', headerName : 'MESSAGE', field : 'message', wrapText : true, autoHeight : true, 
-            cellRenderer : coloredFrontendMessage,
+            cellRenderer : ColoredFrontendMessage,
             cellStyle : { fontSize : fontSize },
             resizable : true, filter : true, floatingFilter: true, sortable : true
         }
