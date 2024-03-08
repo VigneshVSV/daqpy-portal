@@ -55,6 +55,8 @@ export const SignIn = observer(() => {
     const [loginLoading, setLoginLoading] = useState<boolean>(false)
     const [loginMessage, setLoginMessage] = useState<string>('')
     const [primaryHostOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('primary-host-options')
+    const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
+    
 
     const updateGlobalState = useCallback(async (primaryHost : string | undefined) => {
         let loginDisabled = true, errMsg = ''
@@ -146,7 +148,6 @@ export const SignIn = observer(() => {
             <Container id='sign-in-container' component='main' maxWidth='xs'>
                 <CssBaseline />
                 <Box
-
                     sx={{
                         marginTop: 8,
                         display: 'flex',
@@ -273,6 +274,26 @@ export const SignIn = observer(() => {
                                     value={primaryHost? primaryHost : primaryHostOptions? primaryHostOptions[0] : ""}
                                 />}
                                 sx={{ flexGrow : 1, display : 'flex'}}
+                            renderOption={(props, option : any, { selected }) => (
+                                    <li 
+                                        {...props}
+                                        onMouseOver={() => setAutocompleteShowDeleteIcon(option)}
+                                        onMouseLeave={() => setAutocompleteShowDeleteIcon('')}
+                                    >
+                                        <Typography 
+                                            sx={{ 
+                                                display : 'flex', flexGrow : 1, 
+                                                fontWeight : option === autocompleteShowDeleteIcon? 'bold' : null 
+                                            }}
+                                        >
+                                            {option}
+                                        </Typography>
+                                        {option === autocompleteShowDeleteIcon? 
+                                        <IconButton size="small" > 
+                                            {/* // clientState.editURLsList(option, 'REMOVE')}> */}
+                                            <IconsMaterial.DeleteForeverTwoTone fontSize="small" />
+                                        </IconButton> : null }
+                                    </li>)}
                         />
                         <IconButton size="large" onClick={() =>  window.open(primaryHost, "_blank")}>
                             <Tooltip title="open system host in new tab">
@@ -294,8 +315,7 @@ export const SignIn = observer(() => {
                         <Typography 
                             variant="caption"
                             fontSize={16} 
-                            sx={{flexGrow : 1, display: 'flex', pt : 2, alignContent : "center"}}
-                            
+                            sx={{flexGrow : 1, display: 'flex', pt : 2, alignContent : "center"}}   
                         >
                             {errorMessage}
                         </Typography>
