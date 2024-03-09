@@ -399,7 +399,7 @@ const DashboardURLDialog = observer(() => {
     const dashboardStateManager = useRef<any>(null)
     
     const [fetchSuccessful, setFetchSuccessful] = useState<boolean>(true)    
-    const [loading, fetchData, errorMessage, errorTraceback] = useDashboard(dashboardURL, dashboardStateManager)
+    const [loading, fetchData, errorMessage, errorTraceback, _] = useDashboard(dashboardURL, dashboardStateManager)
 
     const updateDashboardURL = (value : string) => {
         setDashboardURL(value)
@@ -422,7 +422,7 @@ const DashboardURLDialog = observer(() => {
         let path : string
         let fetchSuccess = await fetchData()
         if(fetchSuccess)
-            path='/dashboard-view'
+            path='/dashboards/quick-view'
         else 
             path='/'
         setFetchSuccessful(fetchSuccess)
@@ -518,11 +518,11 @@ const DashboardURLDialog = observer(() => {
                     : null}
                     <Stack>
                         <Stack direction="row">
-                            <Button onClick={() => setGlobalLocation('/view')}>Open Saved</Button>
+                            <Button onClick={() => setGlobalLocation('/dashboards/quick-view')}>Open Saved</Button>
                             <Button onClick={openDashboard}>Fetch and Open</Button>
                         </Stack>
                         <Stack direction="row" alignSelf={"flex-end"}>
-                            <Button onClick={() => setGlobalLocation('/view')}>Open Last Used</Button>
+                            <Button onClick={() => setGlobalLocation('/dashboards/quick-view')}>Open Last Used</Button>
                         </Stack>
                     </Stack> 
                 </DialogActions>
