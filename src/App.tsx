@@ -54,15 +54,15 @@ const App = () => {
                             <SignIn />
                         </Route>
                         <Overview baseRoute='/overview' />
-                        <Route path='/dashboards/quick-view'>
+                        <Route path='/pages/quick-view'>
                             <DashboardView globalState={globalAppState} />   
                         </Route> 
-                        <Route path='/dashboards/:name'>
+                        <Route path='/dashboards/view/:name'>
                             <ErrorBackdrop 
                                 message="404 - dashboard routing based on name not implemented yet" 
                                 goBack={() => setLocation('/')}
                             />
-                        </Route> 
+                        </Route>
                         <Route path='/clients/remote-object/unsafe'>
                             <UnsafeClient setGlobalLocation={setLocation} />
                         </Route>

@@ -28,9 +28,9 @@ type UndockableConsoleProps = {
     clientState : RemoteObjectClientState
 }
 
-const allowedConsoleFontSizes = ["6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30"]
-const allowedConsoleWindowSizes = ["100", "200", "300", "400", "500", "700", "1000", "2000", "5000", "10000"]
-const allowedConsoleMaxEntries  = ["5", "10", "15", "20", "25", "50", "100", "200", "500", "show all"]
+export const allowedConsoleFontSizes = ["6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30"]
+export const allowedConsoleWindowSizes = ["100", "200", "300", "400", "500", "700", "1000", "2000", "5000", "10000"]
+export const allowedConsoleMaxEntries  = ["5", "10", "15", "20", "25", "50", "100", "200", "500", "show all"]
 
 export const UndockableConsole = observer(( { globalState, clientState }: UndockableConsoleProps) => {
 
@@ -296,7 +296,7 @@ type LiveLogViewerProps = {
     clientState : RemoteObjectClientState
 }
 
-const allowedLogIntervals=['1', '2', '3', '5', '7', '10', '15', '20', '30', '60', '120', '300']
+export const allowedLogIntervals=['1', '2', '3', '5', '7', '10', '15', '20', '30', '60', '120', '300']
 
 export const LiveLogViewer = ({ clientState, globalState } : LiveLogViewerProps) => {
 

@@ -1,5 +1,8 @@
 // Internal & 3rd party functional libraries
 import { Route, Router, useLocation, useRouter } from "wouter";
+import axios from "axios";
+import { observer } from "mobx-react-lite";
+import { useContext } from "react";
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, 
@@ -12,9 +15,7 @@ import { AppSettings } from "./app-settings";
 import { ServerWizard } from "./http-server-wizard/view";
 import { RemoteObjectViewer } from "./remote-object-client/view";
 import { RemoteObjectClientState } from "./remote-object-client/remote-object-client-state";
-import { useContext } from "react";
 import { AppContext, AppProps } from "../App";
-import axios from "axios";
 
 
 
@@ -24,9 +25,10 @@ type DrawerOptionProps = {
     path : string
     globalPath? : boolean
     onClick? : (globalState : ApplicationState) => void
+    secondaryText? : string
 }
 
-const DrawerTitle = (props : any) => {
+const DrawerGroupTitle = (props : any) => {
     const theme = useTheme()
     return (
         <List>
@@ -65,12 +67,15 @@ const DrawerGroup = ({ content } : { content : DrawerOptionProps[] }) => {
                     >
                         <ListItemIcon sx = {{
                             '&:hover': {
-                            backgroundColor : '#EAF7FE'
+                                backgroundColor : '#EAF7FE'
                             }}}
                         >
                                 {contentInfo.icon}
                         </ListItemIcon>
-                        <ListItemText primary={contentInfo.text} />
+                        <ListItemText 
+                            primary={contentInfo.text}  
+                            secondary={contentInfo.secondaryText? contentInfo.secondaryText : null}
+                        />
                     </ListItemButton>
                 </ListItem>
                 ))}
@@ -82,14 +87,13 @@ const DrawerGroup = ({ content } : { content : DrawerOptionProps[] }) => {
 
 
 const Panels : { [key : string] : DrawerOptionProps[] } = {
-    'Dashboard' : [
+    'App' : [
         {
             text : 'Pages/Dashboards',
             icon : <IconsMaterial.DashboardTwoTone />,
             path : '/overview/pages',
-        }
-    ],
-    'App' : [
+            secondaryText : 'experimental'
+        },
         {
             text : 'Settings',
             icon : <IconsMaterial.SettingsTwoTone />,
@@ -128,7 +132,7 @@ const Panels : { [key : string] : DrawerOptionProps[] } = {
                         )   
                         if (response.status !== 200)
                             console.log("could not logout")
-                    } catch (error) {
+                    } catch (error : any) {
                         console.log(error)
                     }
                 }
@@ -146,7 +150,7 @@ type OverviewProps = {
 
 const drawerWidth = 300
 
-export const Overview = ( { baseRoute } : OverviewProps ) => {
+export const Overview = observer(({ baseRoute } : OverviewProps ) => {
 
     const router = useRouter();
     const nestedBaseRoute = `${router.base}${baseRoute}`;
@@ -175,7 +179,7 @@ export const Overview = ( { baseRoute } : OverviewProps ) => {
                         let info : DrawerOptionProps[] = Panels[group]
                         return (
                             <div key={index}>
-                                <DrawerTitle text={group} />
+                                <DrawerGroupTitle text={group} />
                                 <DrawerGroup content={info} />
                             </div>
                         )
@@ -191,7 +195,7 @@ export const Overview = ( { baseRoute } : OverviewProps ) => {
                         <Pages />
                     </Route>
                     <Route path='/settings'>
-                        <AppSettings globalState={globalState} />
+                        <AppSettings />
                     </Route>
                     <Route path='/servers'>
                         <ServerWizard globalState={globalState} />
@@ -210,6 +214,6 @@ export const Overview = ( { baseRoute } : OverviewProps ) => {
             </Box>
         </Router>
     )
-}
+})
 
 

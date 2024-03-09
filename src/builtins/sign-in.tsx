@@ -8,7 +8,7 @@ import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
     IconButton, Stack, Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, 
-    Tooltip, LinearProgress, FormControlLabel, Checkbox } from '@mui/material';
+    Tooltip, LinearProgress, FormControlLabel, Checkbox, InputAdornment } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
@@ -47,13 +47,12 @@ export const SignIn = observer(() => {
 
     const { globalState, setGlobalLocation } = useContext(AppContext) as AppProps
     const [hasAutoLoginCredential, _] = useState(document.cookie.split("; ").find((row) => row.startsWith("user="))?.split("=")[1])
-    console.log("cookies", document.cookie)
-    // https://stackoverflow.com/questions/51109559/get-cookie-with-react
     const [primaryHost, setPrimaryHost] = useState<string>('')    
     const [errorMessage, setErrorMessage] = useState<string>('')
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
     const [loginLoading, setLoginLoading] = useState<boolean>(false)
     const [loginMessage, setLoginMessage] = useState<string>('')
+    const [showPassword, setShowPassword] = useState<boolean>(false)
     const [primaryHostOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('primary-host-options')
     const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
     
@@ -180,9 +179,18 @@ export const SignIn = observer(() => {
                             fullWidth
                             label="Password"
                             name="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"} 
                             autoComplete="current-password"
                             disabled={loginDisabled}
+                            InputProps={{ // <-- This is where the toggle button is added.
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? <IconsMaterial.Visibility /> : <IconsMaterial.VisibilityOff />}
+                                    </IconButton>
+                                  </InputAdornment>
+                                )
+                              }}
                         />
                         <FormControlLabel
                             id='remember-me-checkbox'

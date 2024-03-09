@@ -8,7 +8,7 @@ import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ObjectInspector } from "react-inspector";
 import { ModuleRegistry } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
+// import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';    
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-alpine.css';
 import '@ag-grid-community/styles/ag-theme-material.css'
@@ -16,7 +16,7 @@ import './styles.css'
 // Custom component libraries 
 
 
-ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
+// ModuleRegistry.registerModules([ ClientSideRowModelModule ]);
 
 
 

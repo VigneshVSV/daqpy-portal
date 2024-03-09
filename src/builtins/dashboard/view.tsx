@@ -37,6 +37,13 @@ export const DashboardView = observer(({globalState} : {globalState : Applicatio
             setLoading(false)
         }
         loadCurrentDashboardFromDB()
+        return () => {
+            if(!stateManager)
+                return
+            stateManager.deleteComponents()
+            stateManager.deleteActions()
+            console.log("cleared state manager")
+        }
     }, [stateManager, globalState.dashboardURL])    
 
     return (

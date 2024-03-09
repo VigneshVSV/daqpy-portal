@@ -1,13 +1,14 @@
 'use client'
 // Internal & 3rd party functional libraries
 import { createContext } from 'react';
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
 import axios, { AxiosResponse } from 'axios';
 // custom functional libraries
 import { asyncRequest } from '@hololinked/mobx-render-engine/utils/http';
 import { ScriptImporterData, remoteObjectWizardData } from '../builtins/http-server-wizard/remote-object-wizard-data-container';
 import { ComponentState } from '@hololinked/mobx-render-engine/state-container';
 import { StateManager } from '@hololinked/mobx-render-engine/state-manager';
+import { stringToObject } from '../utils';
 // Internal & 3rd party component libraries
 // Custom component libraries
 
@@ -24,11 +25,12 @@ export type ApplicationSettings = {
     dashboards : {
         deleteWithoutAsking : boolean 
         showRecentlyUsed : boolean 
+        use : boolean
     }
     login : {
         footer : string
         footerLink  : string
-        show : boolean
+        displayFooter : boolean
     }
     servers : {
         allowHTTP : boolean
@@ -40,6 +42,15 @@ export type ApplicationSettings = {
             defaultWindowSize : number
             defaultFontSize : number
         }
+        logViewer : {
+            stringifyOutput : boolean 
+            defaultMaxEntries : number 
+            defaultWindowSize : number
+            defaultFontSize : number
+        }
+    }
+    others : {
+        WOTTerminology : boolean
     }
 }
 
@@ -47,11 +58,12 @@ export const defaultAppSettings : ApplicationSettings = {
     dashboards : {
         deleteWithoutAsking : true,
         showRecentlyUsed : true,
+        use : false
     },
     login : {
         footer :  '',
         footerLink  : '',
-        show :  true,
+        displayFooter :  false,
     },
     servers : {
         allowHTTP : true,
@@ -62,7 +74,16 @@ export const defaultAppSettings : ApplicationSettings = {
             defaultMaxEntries : 10,
             defaultWindowSize : 500,
             defaultFontSize : 16,
+        },
+        logViewer : {
+            stringifyOutput : false,
+            defaultMaxEntries : 10,
+            defaultWindowSize : 500,
+            defaultFontSize : 16,
         }
+    },
+    others : {
+        WOTTerminology : false
     }
 }
 
@@ -124,7 +145,7 @@ const PRIMARY_HOST = 'PRIMARY_HOST'
 
 export class ApplicationState {
 
-    appsettings : any
+    appsettings : ApplicationSettings
     primaryHostServer : PythonServer | null 
     servers  : Array<PythonServer>
     HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData }
@@ -159,6 +180,7 @@ export class ApplicationState {
                 dashboardStateManager : observable,
                 dashboardURL : observable,
                 setPrimaryHostServer : action,
+                updateSetting : action,
                 updateSettings : action,
                 setDashboard : action,
             }
@@ -186,24 +208,18 @@ export class ApplicationState {
         return state
     }
 
-    async updateSettings(field : string, value : any) {
-        const response = await asyncRequest({
-            url : 'settings', 
-            method : 'post',
-            baseURL : (this.primaryHostServer as PythonServer).qualifiedIP,
-            data : {
-                field : field, 
-                value : value
-            },
-            // httpsAgent: new https.Agent({ rejectUnauthorized: false })
-        }) as AxiosResponse
-        // console.log(response)
-        if(response.status === 200) {
-            // @ts-ignore
-            this.appsettings[field] = value
-            window.sessionStorage.setItem('appsettings', JSON.parse(this.appsettings))
-        }
-        // console.log(this.appsettings)
+    updateSetting(field : string, value : any) {
+        // @ts-ignore
+        stringToObject(field, value, this.appsettings)
+        window.sessionStorage.setItem('appsettings', JSON.stringify(this.appsettings))
+    }
+    
+    updateSettings(value : ApplicationSettings) {
+        this.appsettings = {
+            ...this.appsettings,
+            ...value 
+        } 
+        window.sessionStorage.setItem('appsettings', JSON.stringify(value))
     }
 
     async setPrimaryHostServer(serverURL : string) {
