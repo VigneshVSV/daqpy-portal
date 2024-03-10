@@ -5,19 +5,21 @@ import axios from "axios";
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import { Grid, Typography, FormControlLabel, Switch, Divider, Box, 
-    OutlinedInput, InputAdornment, IconButton, Stack, Checkbox, Select, MenuItem, InputLabel, FormControl } from "@mui/material"
+    OutlinedInput, InputAdornment, IconButton, Stack, Checkbox, Select, MenuItem, 
+    InputLabel, FormControl, SelectChangeEvent } from "@mui/material"
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { AppContext, AppProps } from "../App";
 import { stringToObject } from "../utils";
 import { toJS } from "mobx";
-import { allowedConsoleFontSizes, allowedConsoleMaxEntries, allowedConsoleWindowSizes, allowedLogIntervals } from "./remote-object-client/output-components";
+import { allowedConsoleFontSizes, allowedConsoleMaxEntries, allowedConsoleWindowSizes, 
+        allowedLogIntervals } from "./remote-object-client/output-components";
 
 
 
 
 type SettingsProps = {
-    updateSetting : (URL : string, settingName : string, value : any, event : React.BaseSyntheticEvent | null) => Promise<void>
+    updateSetting : (URL : string, settingName : string, value : any, event : React.BaseSyntheticEvent | any) => Promise<void>
 }
 
 const SettingsContext = createContext<SettingsProps | null>(null)
@@ -165,9 +167,10 @@ const BooleanCheckboxSetting = observer(({ label, initialValue, settingName, set
 
 
 
-const SelectSetting = observer(( { label, initialValue, allowedValues } : 
-    { label : string, initialValue : any, allowedValues : any[] }) => {
-
+const SelectSetting = observer(( { label, initialValue, allowedValues, settingName, settingURL } : 
+    { label : string, initialValue : any, allowedValues : any[], settingName : string, settingURL : string}) => {
+    
+    const { updateSetting } = useContext(SettingsContext) as SettingsProps
     const [value, setValue] = useState(initialValue)
 
     useEffect(() => {
@@ -176,6 +179,10 @@ const SelectSetting = observer(( { label, initialValue, allowedValues } :
 
     let id = label.replace(' ', '-')
     // mostly useState and useEffect is not necessary - can be removed someday
+
+    const handleChange = useCallback(async(event : SelectChangeEvent) => {
+        await updateSetting(settingURL, settingName, event.target.value, event)
+    }, [settingName, settingURL])
 
     return (
         <FormControl id={id+'-form'} >
@@ -187,10 +194,10 @@ const SelectSetting = observer(( { label, initialValue, allowedValues } :
                 size="small"
                 variant="standard"
                 sx={{ width : 100 }}
-                // onChange={handleFontSizeChange}
+                onChange={handleChange}
             >
                 {allowedValues.map((value : string, index : number) => 
-                    <MenuItem key={`${id}-selector-${value}`} value={value}>{value}</MenuItem>)}
+                    <MenuItem key={`$${id}-selector-${value}-at-pos-${index}`} value={value}>{value}</MenuItem>)}
             </Select>
         </FormControl>
     )
@@ -240,6 +247,99 @@ export const LoginPageSettings = observer(() => {
 
 
 
+const RemoteObjectViewerSettings = observer(() => {
+
+    const { globalState } = useContext(AppContext) as AppProps
+
+    return (
+        <SettingRow
+            title="Remote Object Viewer"
+            description="Default Settings for Remote Object Viewer in RemoteObject Wizard"
+        >
+            <Typography variant="button">Console</Typography>
+            <Grid container direction='row' id="remote-object-viewer-console-settings">
+                <Grid item>
+                    <BooleanCheckboxSetting
+                        settingName="remoteObjectViewer.console.stringifyOutput"
+                        settingURL="/remote-object-viewer"
+                        initialValue={globalState.appsettings.remoteObjectViewer.console.stringifyOutput}
+                        label="stringify output"
+                    />
+                </Grid>
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting 
+                        settingName="remoteObjectViewer.console.defaultFontSize"
+                        settingURL="/remote-object-viewer"
+                        label="Font Size"
+                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultFontSize}
+                        allowedValues={allowedConsoleFontSizes}
+                    />
+                </Grid>
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting 
+                        settingName="remoteObjectViewer.console.defaultWindowSize"
+                        settingURL="/remote-object-viewer"
+                        label="Window Size"
+                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultWindowSize}
+                        allowedValues={allowedConsoleWindowSizes}
+                    />
+                </Grid>
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting 
+                        settingName="remoteObjectViewer.console.defaultMaxEntries"
+                        settingURL="/remote-object-viewer"
+                        label="Max Entries"
+                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultMaxEntries}
+                        allowedValues={allowedConsoleMaxEntries}
+                    />
+                </Grid> 
+            </Grid>
+            <Box sx={{p : 1}}/>
+            <Typography variant="button">Log Viewer</Typography>          
+            <Grid container direction='row' id="remote-object-viewer-log-viewer-settings" sx={{pt : 2}}>
+                <Grid item>
+                    <SelectSetting 
+                        settingName="remoteObjectViewer.logViewer.defaultFontSize"
+                        settingURL="/remote-object-viewer"
+                        label="Font Size"
+                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultFontSize}
+                        allowedValues={allowedConsoleFontSizes}
+                    />
+                </Grid>
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting 
+                        settingName="remoteObjectViewer.logViewer.defaultWindowSize"
+                        settingURL="/remote-object-viewer"
+                        label="Window Size"
+                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultWindowSize}
+                        allowedValues={allowedConsoleWindowSizes}
+                    />
+                </Grid>
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting
+                        settingName="remoteObjectViewer.logViewer.defaultInterval"
+                        settingURL="/remote-object-viewer"
+                        label="Interval"
+                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultInterval}
+                        allowedValues={allowedLogIntervals}
+                    />
+                </Grid> 
+                <Grid item sx={{ pl : 2 }}>
+                    <SelectSetting
+                        settingName="remoteObjectViewer.logViewer.defaultMaxEntries"
+                        settingURL="/remote-object-viewer"
+                        label="Max Entries"
+                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultMaxEntries}
+                        allowedValues={allowedConsoleWindowSizes}
+                    />
+                </Grid> 
+            </Grid>
+        </SettingRow>
+    )
+})
+
+
+
 const OtherSettings = observer(() => {
     
     const { globalState } = useContext(AppContext) as AppProps
@@ -252,7 +352,7 @@ const OtherSettings = observer(() => {
             <Grid container direction='column' id="dashboards-settings">
                 <Grid item>
                     <BooleanSwitchSetting
-                        settingName="dashboard.use"
+                        settingName="dashboards.use"
                         settingURL="/dashboards"
                         initialValue={globalState.appsettings.dashboards.use}
                         label="use experimental dashboard renderer"
@@ -280,91 +380,19 @@ const OtherSettings = observer(() => {
 })
 
 
-const RemoteObjectViewerSettings = observer(() => {
-
-    const { globalState } = useContext(AppContext) as AppProps
-
-    return (
-        <SettingRow
-            title="Remote Object Viewer"
-            description="Default Settings for Remote Object Viewer in RemoteObject Wizard"
-        >
-            <Typography variant="button">Console</Typography>
-            <Grid container direction='row' id="remote-object-viewer-console-settings">
-                <Grid item>
-                    <BooleanCheckboxSetting
-                        settingName="remoteObjectViewer.console.stringifyOutput"
-                        settingURL="/remote-object-viewer"
-                        initialValue={globalState.appsettings.remoteObjectViewer.console.stringifyOutput}
-                        label="stringify output"
-                    />
-                </Grid>
-                <Grid item sx={{ pl : 2 }}>
-                    <SelectSetting 
-                        label="Font Size"
-                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultFontSize}
-                        allowedValues={allowedConsoleFontSizes}
-                    />
-                </Grid>
-                <Grid item sx={{ pl : 2 }}>
-                    <SelectSetting 
-                        label="Window Size"
-                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultWindowSize}
-                        allowedValues={allowedConsoleWindowSizes}
-                    />
-                </Grid>
-                <Grid item sx={{ pl : 2 }}>
-                    <SelectSetting 
-                        label="Max Entries"
-                        initialValue={globalState.appsettings.remoteObjectViewer.console.defaultMaxEntries}
-                        allowedValues={allowedConsoleMaxEntries}
-                    />
-                </Grid> 
-            </Grid>
-            <Box sx={{p : 1}}/>
-            <Typography variant="button">Log Viewer</Typography>          
-            <Grid container direction='row' id="remote-object-viewer-log-viewer-settings" sx={{pt : 2}}>
-                <Grid item>
-                    <SelectSetting 
-                        label="Font Size"
-                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultFontSize}
-                        allowedValues={allowedConsoleFontSizes}
-                    />
-                </Grid>
-                <Grid item sx={{ pl : 2 }}>
-                    <SelectSetting 
-                        label="Window Size"
-                        initialValue={globalState.appsettings.remoteObjectViewer.logViewer.defaultWindowSize}
-                        allowedValues={allowedConsoleWindowSizes}
-                    />
-                </Grid>
-                <Grid item sx={{ pl : 2 }}>
-                    <SelectSetting
-                        label="Interval"
-                        initialValue={2}
-                        allowedValues={allowedLogIntervals}
-                    />
-                </Grid> 
-            </Grid>
-        </SettingRow>
-    )
-})
-
-
-
 
 export const AppSettings = observer(() => {
 
     const { globalState } = useContext(AppContext) as AppProps
 
     const updateSetting = useCallback(async(URL : string, settingName : string, value : any, 
-                                                event : React.BaseSyntheticEvent | null) => {
+                                                event : React.BaseSyntheticEvent | any) => {
         if(event)
             event.preventDefault()
         try {
             const response = await axios.patch(
                 `${globalState.primaryHostServer}/app-settings${URL}`, 
-                stringToObject(settingName, value, {}), 
+                stringToObject(settingName.split('.').slice(1).join('.'), value, {}), 
                 { withCredentials : true }
             )
             if(response.status === 200) 

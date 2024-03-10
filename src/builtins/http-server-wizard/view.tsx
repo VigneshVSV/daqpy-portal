@@ -19,6 +19,7 @@ import "ace-builds/src-noconflict/theme-crimson_editor"
 import "ace-builds/src-noconflict/ext-language_tools";
 // Custom component libraries 
 import { ErrorViewer, TabPanel } from "../reuse-components";
+import { AppContext, AppProps } from "../../App";
 
 
 type ServerWizardProps = {
@@ -222,6 +223,8 @@ export const PrevNextNavigation = (props : any) => {
 
 
 const RemoteObjectWizard = () => {
+
+    const { globalState } = useContext(AppContext) as AppProps
 
     const { currentServer, setErrorMessage, setErrorTraceback } = useContext(ServerWizardContext) as ServerWizardProps
     const [activeStep, setActiveStep] = useState(0)

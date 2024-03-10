@@ -1,14 +1,12 @@
-'use client'
 // Internal & 3rd party functional libraries
 import { createContext } from 'react';
-import { makeObservable, observable, action, computed } from 'mobx';
-import axios, { AxiosResponse } from 'axios';
+import { makeObservable, observable, action } from 'mobx';
+import axios from 'axios';
 // custom functional libraries
-import { asyncRequest } from '@hololinked/mobx-render-engine/utils/http';
 import { ScriptImporterData, remoteObjectWizardData } from '../builtins/http-server-wizard/remote-object-wizard-data-container';
 import { ComponentState } from '@hololinked/mobx-render-engine/state-container';
 import { StateManager } from '@hololinked/mobx-render-engine/state-manager';
-import { stringToObject } from '../utils';
+import { updateObjectFromString } from '../utils';
 // Internal & 3rd party component libraries
 // Custom component libraries
 
@@ -43,10 +41,10 @@ export type ApplicationSettings = {
             defaultFontSize : number
         }
         logViewer : {
-            stringifyOutput : boolean 
             defaultMaxEntries : number 
             defaultWindowSize : number
             defaultFontSize : number
+            defaultInterval : number
         }
     }
     others : {
@@ -76,10 +74,10 @@ export const defaultAppSettings : ApplicationSettings = {
             defaultFontSize : 16,
         },
         logViewer : {
-            stringifyOutput : false,
             defaultMaxEntries : 10,
             defaultWindowSize : 500,
             defaultFontSize : 16,
+            defaultInterval : 2
         }
     },
     others : {
@@ -210,7 +208,7 @@ export class ApplicationState {
 
     updateSetting(field : string, value : any) {
         // @ts-ignore
-        stringToObject(field, value, this.appsettings)
+        updateObjectFromString(field, value, this.appsettings)
         window.sessionStorage.setItem('appsettings', JSON.stringify(this.appsettings))
     }
     

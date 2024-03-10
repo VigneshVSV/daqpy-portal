@@ -1,24 +1,23 @@
 // Internal & 3rd party functional libraries
-import {  useState, useEffect, useRef, MutableRefObject, useCallback } from "react";
+import {  useState, useEffect, useRef, useCallback } from "react";
 import { observer } from "mobx-react-lite";
-import { AxiosPromise, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import { Box, Button, FormControl, InputLabel, Select, Stack,
-    Typography, MenuItem, ButtonGroup,  Divider, Checkbox, IconButton, Portal } from "@mui/material"
+    Typography, MenuItem, ButtonGroup,  Divider, Checkbox, IconButton } from "@mui/material"
 import OpenInNewTwoToneIcon from '@mui/icons-material/OpenInNewTwoTone';
 import DownloadIcon from '@mui/icons-material/Download';
 import CallReceivedTwoToneIcon from '@mui/icons-material/CallReceivedTwoTone';
 import OpenInBrowserTwoToneIcon from '@mui/icons-material/OpenInBrowserTwoTone';
 import { Console, Hook, Unhook } from 'console-feed-optimized'
 // Custom component libraries 
-import { RemoteObjectInformation } from './remote-object-info-containers'
 import { ApplicationState } from "../../mobx/state-container";
 import { downloadJSON, openJSONinNewTab } from "@hololinked/mobx-render-engine/utils/misc";
 import { LogTable, LogDataType, useRemoteObjectLogColumns } from "../log-viewer/log-viewer";
 import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 import { RemoteObjectClientState } from "./remote-object-client-state";
-import { ErrorViewer, RenderInWindow } from "../reuse-components";
+import { ErrorViewer } from "../reuse-components";
 import NewWindow from "react-new-window";
 
 
@@ -35,11 +34,11 @@ export const allowedConsoleMaxEntries  = ["5", "10", "15", "20", "25", "50", "10
 export const UndockableConsole = observer(( { globalState, clientState }: UndockableConsoleProps) => {
 
     const [consoleOutputFontSize, setConsoleOutputFontSize] = useState<string>
-                    (globalState.appsettings.remoteObjectViewerConsoleDefaultFontSize.toString())
+                    (globalState.appsettings.remoteObjectViewer.console.defaultFontSize.toString())
     const [consoleWindowSize, setConsoleWindowSize] = useState<string>
-                    (globalState.appsettings.remoteObjectViewerConsoleDefaultWindowSize.toString())
+                    (globalState.appsettings.remoteObjectViewer.console.defaultWindowSize.toString())
     const [consoleMaxEntries, setConsoleMaxEntries] = useState<string>
-                    (globalState.appsettings.remoteObjectViewerConsoleDefaultMaxEntries.toString())
+                    (globalState.appsettings.remoteObjectViewer.console.defaultMaxEntries.toString())
     // return values from python server side
     const [consoleEntries, setConsoleEntries] = useState([])
     const [undock, setUndock] = useState<boolean>(false)
@@ -304,10 +303,12 @@ export const LiveLogViewer = ({ clientState, globalState } : LiveLogViewerProps)
     const [docked, setDocked] = useState<boolean>(true)
 
     const [logWindowSize, setLogWindowSize] = useState<string>
-            (globalState.appsettings.remoteObjectViewerConsoleDefaultWindowSize.toString())
+            (globalState.appsettings.remoteObjectViewer.logViewer.defaultWindowSize.toString())
     const [logOutputFontSize, setLogOutputFontSize] = useState<string>
-            (globalState.appsettings.remoteObjectViewerConsoleDefaultFontSize.toString())
-    const [logInterval, setLogInterval] = useState<string>('1')
+            (globalState.appsettings.remoteObjectViewer.logViewer.defaultFontSize.toString())
+    const [logInterval, setLogInterval] = useState<string>
+            (globalState.appsettings.remoteObjectViewer.logViewer.defaultInterval.toString())            
+    
     
     const [rowData, setRowData] = useState<LogDataType[] | null>([])
     const columnDefs = useRemoteObjectLogColumns('16px')

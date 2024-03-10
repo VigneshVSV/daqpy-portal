@@ -20,7 +20,7 @@ import { EventInformation, MethodInformation, ParameterInformation,
     ResourceInformation} from './remote-object-info-containers'
 import CustomizedTreeView from "./object-tree";
 import { ErrorBackdrop, TabPanel } from "../reuse-components";
-import { ApplicationState } from "../../mobx/state-container";
+import { ApplicationState, defaultAppSettings } from "../../mobx/state-container";
 import { SelectedParameterWindow } from "./parameter-client";
 import { SelectedMethodWindow } from "./method-client";
 import { DashboardView } from "../dashboard/view";
@@ -587,19 +587,7 @@ export const UnsafeClient = (props : UnsafeClientProps) => {
         servers  : [],
         // @ts-ignore
         HTTPServerWizardData: { remoteObjectWizardData: null },
-        appsettings :  {
-            dashboardsDeleteWithoutAsking : true,
-            dashboardsShowRecentlyUsed : true,
-            loginFooter : '',
-            loginFooterLink : '',
-            loginDisplayFooter : true,
-            serversAllowHTTP : true,
-            remoteObjectViewerConsoleStringifyOutput : false,
-            remoteObjectViewerConsoleDefaultMaxEntries : 10,
-            remoteObjectViewerConsoleDefaultWindowSize : 500,
-            remoteObjectViewerConsoleDefaultFontSize : 16,
-            // stringifyConsoleOutput : false 
-        }
+        appsettings : defaultAppSettings
     })
 
     const clientState = useRef<RemoteObjectClientState>(new RemoteObjectClientState())

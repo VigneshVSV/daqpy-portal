@@ -115,7 +115,7 @@ export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteOb
     return (
         <Stack> 
             <Typography variant="caption">
-                PRIMARY HOST : 
+                SYSTEM HOST : 
             </Typography>
             <Link 
                 onClick={() => window.open(getFullDomain(globalState.primaryHostServer as PythonServer) + '/paths')} 

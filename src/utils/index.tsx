@@ -16,7 +16,7 @@ export function groupElementsByN(arr : Array<any>, chunkSize : number | null) {
     return result;
 }
 
-export function stringToObject(path : string, value : any, obj : any) {
+export function updateObjectFromString(path : string, value : any, obj : any) {
     let parts = path.split("."), part
     let last = parts.pop() as string
     while(part = parts.shift()) {
@@ -25,5 +25,11 @@ export function stringToObject(path : string, value : any, obj : any) {
         obj = obj[part]; 
     }
     obj[last] = value;
-    return obj
+}
+
+
+export function stringToObject(path : string, value : any, obj : any) {
+    let originalObject = obj 
+    updateObjectFromString(path, value, obj)
+    return originalObject
 }

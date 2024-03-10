@@ -104,7 +104,7 @@ const Panels : { [key : string] : DrawerOptionProps[] } = {
         {
             text: 'Remote Object Wizard',
             icon: <IconsMaterial.TerminalTwoTone />,
-            path: '/overview/objects'
+            path: '/overview/clients/remote-object'
         },
         {
             text: 'HTTP Server Wizard',
@@ -114,7 +114,7 @@ const Panels : { [key : string] : DrawerOptionProps[] } = {
         {
             text: 'Log Viewer',
             icon: <IconsMaterial.TableChartTwoTone />,
-            path: '/log-viewer'
+            path: '/overview/clients/log-viewer'
         }
     ],
     'Account' : [
@@ -200,15 +200,16 @@ export const Overview = observer(({ baseRoute } : OverviewProps ) => {
                     <Route path='/servers'>
                         <ServerWizard globalState={globalState} />
                     </Route>
-                    <Route path='/objects'>
+                    <Route path='/clients/remote-object'>
                         <RemoteObjectViewer
                             globalState={globalState}
+                            setGlobalLocation={setGlobalLocation}
                             unsafeClient={false}
                             clientState={new RemoteObjectClientState()}
-                            // showSettings={false}
-                            // setShowSettings={null}
-                            setGlobalLocation={setGlobalLocation}
                         />
+                    </Route>
+                    <Route path='/clients/log-viewer' >
+                        <div>Unimplemented tab</div>
                     </Route>
                 </Box>
             </Box>
