@@ -81,11 +81,14 @@ export const SignIn = observer(() => {
         let errMsg = '', loginDisabled = true
         setLoginLoading(true)
         setLoginMessage('pinging...')
-        if(host) {
+        if(host && !host.startsWith('https://') && !host.startsWith('http://'))
+            errMsg = 'add http protocol prefix'
+        else if(host) {
             if(host.endsWith('/'))
                 host = host.slice(0, -1)
             try {
                 const response = await axios.get(host)
+                console.log(response)
                 if(response.status === 200) {
                     loginDisabled = false
                     globalState.setPrimaryHostServer(host)
@@ -93,6 +96,7 @@ export const SignIn = observer(() => {
                     errMsg = response.statusText
                 }
             } catch(error : any) {
+                console.log("error ", error)
                 errMsg = error.response? error.response.statusText :  error.message + " - check CORS, https certificate, reachability etc."
             }
         }
@@ -297,8 +301,7 @@ export const SignIn = observer(() => {
                                             {option}
                                         </Typography>
                                         {option === autocompleteShowDeleteIcon? 
-                                        <IconButton size="small" > 
-                                            {/* // clientState.editURLsList(option, 'REMOVE')}> */}
+                                        <IconButton size="small" onClick={() => modifyOptions(option, 'REMOVE')}>
                                             <IconsMaterial.DeleteForeverTwoTone fontSize="small" />
                                         </IconButton> : null }
                                     </li>)}
