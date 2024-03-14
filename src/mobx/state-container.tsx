@@ -32,6 +32,7 @@ export type ApplicationSettings = {
     }
     servers : {
         allowHTTP : boolean
+        trusted : string[]
     } 
     remoteObjectViewer : {
         console : {
@@ -65,6 +66,7 @@ export const defaultAppSettings : ApplicationSettings = {
     },
     servers : {
         allowHTTP : true,
+        trusted : []
     },
     remoteObjectViewer : {
         console : {
@@ -144,7 +146,7 @@ const PRIMARY_HOST = 'PRIMARY_HOST'
 export class ApplicationState {
 
     appsettings : ApplicationSettings
-    primaryHostServer : PythonServer | null 
+    primaryHostServer : string | null
     servers  : Array<PythonServer>
     HTTPServerWizardData: { remoteObjectWizardData: remoteObjectWizardData }
     dashboardStateManager : StateManager | null

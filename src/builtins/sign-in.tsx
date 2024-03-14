@@ -8,7 +8,7 @@ import { useAutoCompleteOptionsFromLocalStorage, useDashboard } from './hooks';
 // Internal & 3rd party component libraries
 import { Autocomplete, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
     IconButton, Stack, Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, 
-    Tooltip, LinearProgress, FormControlLabel, Checkbox, InputAdornment } from '@mui/material';
+    Tooltip, LinearProgress, FormControlLabel, Checkbox, InputAdornment, ListItem, List, ListItemButton, ListItemAvatar, ListItemText } from '@mui/material';
 import * as IconsMaterial from '@mui/icons-material';
 // Custom component libraries 
 import { ErrorBackdrop, ErrorViewer } from './reuse-components';
@@ -52,6 +52,8 @@ export const SignIn = observer(() => {
     const [loginDisabled, setLoginDisabled] = useState<boolean>(false)
     const [loginLoading, setLoginLoading] = useState<boolean>(false)
     const [loginMessage, setLoginMessage] = useState<string>('')
+    const preventPing = useRef<boolean>(false)
+    const abortController = useRef<AbortController | null>(null)
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [primaryHostOptions, modifyOptions] = useAutoCompleteOptionsFromLocalStorage('primary-host-options')
     const [autocompleteShowDeleteIcon, setAutocompleteShowDeleteIcon] = useState<string>('')
@@ -77,17 +79,20 @@ export const SignIn = observer(() => {
     }, [globalState])
   
     const pingPrimaryHost = useCallback(async(host : string = '') => {
+        if(abortController.current)
+            abortController.current.abort()
+        abortController.current = new AbortController()
         host = host ? host : primaryHost
-        let errMsg = '', loginDisabled = true
+        let errMsg = '', loginDisabled = true 
         setLoginLoading(true)
         setLoginMessage('pinging...')
         if(host && !host.startsWith('https://') && !host.startsWith('http://'))
             errMsg = 'add http protocol prefix'
-        else if(host) {
+        else if(host && !preventPing.current) {
             if(host.endsWith('/'))
                 host = host.slice(0, -1)
             try {
-                const response = await axios.get(host)
+                const response = await axios.get(host, { signal : abortController.current.signal })
                 console.log(response)
                 if(response.status === 200) {
                     loginDisabled = false
@@ -104,6 +109,8 @@ export const SignIn = observer(() => {
             loginDisabled = true
             errMsg = 'set system host'
         }
+        if(!primaryHostOptions.includes(primaryHost) && preventPing.current)
+            preventPing.current = false
         setLoginMessage('')
         setLoginLoading(false)
         setLoginDisabled(loginDisabled)
@@ -218,31 +225,14 @@ export const SignIn = observer(() => {
                                 type="submit"
                                 fullWidth
                                 variant="contained"
-                                sx={{ mt: 3, mb: 2 }}
+                                sx={{ mt: 1, mb: 1 }}
                                 disabled={loginDisabled}
                             >
                                 {loginDisabled? "Select system host Server To Sign In" : "Sign In"}
                             </Button>
                         }
-                        {hasAutoLoginCredential?
-                            <Button
-                                id='auto-login-button'
-                                variant='contained'
-                            >
-                                Auto Login
-                            </Button>
-                            : null
-
-                        }
+                        { hasAutoLoginCredential? <LoginList /> : null } 
                         <Grid container direction="row">
-                            <Grid item>
-                                {loginDisabled?
-                                    null :        
-                                    <Link href="#" variant="body2">
-                                        Forgot password?
-                                    </Link>                          
-                                }
-                            </Grid>
                             <Grid item>
                                 {loginMessage? 
                                     <Link 
@@ -301,7 +291,10 @@ export const SignIn = observer(() => {
                                             {option}
                                         </Typography>
                                         {option === autocompleteShowDeleteIcon? 
-                                        <IconButton size="small" onClick={() => modifyOptions(option, 'REMOVE')}>
+                                        <IconButton size="small" onClick={() => {
+                                                preventPing.current = true 
+                                                modifyOptions(option, 'REMOVE')
+                                        }}>
                                             <IconsMaterial.DeleteForeverTwoTone fontSize="small" />
                                         </IconButton> : null }
                                     </li>)}
@@ -337,10 +330,7 @@ export const SignIn = observer(() => {
                 </Stack>
             </Container>   
             {/* ----- Icons for few widgets at the bottom ----- */}
-            <Grid container direction ='column' spacing={5} >
-                <Grid item>
-                    {/* give empty space */}
-                </Grid>
+            <Grid container direction='column' spacing={2} sx={{pt : 2}}>
                 <Grid container item direction='row' spacing={5} justifyContent='center'>
                     <Grid item>
                         <Tooltip title="RemoteObject client">
@@ -386,7 +376,6 @@ export const SignIn = observer(() => {
                 <Grid item>
                     {globalState.appsettings.login.displayFooter ? 
                         <Footer 
-                            sx={{ mt: 4, mb: 4 }} 
                             text={globalState.appsettings.login.footer} 
                             link={globalState.appsettings.login.footerLink} 
                         /> : null 
@@ -396,6 +385,40 @@ export const SignIn = observer(() => {
         </Stack>
     );
 })
+
+
+
+const LoginList = () => {
+
+    return(
+        <List dense sx={{ width: '100%', maxHeight : 100, overflowY : 'scroll' }}>
+            {[0, 1, 2, 3].map((value) => {
+                const labelId = `checkbox-list-secondary-label-${value}`;
+                return (
+                    <ListItem
+                        key={value}
+                        disablePadding
+                        secondaryAction={
+                            <IconButton edge="end">
+                                <IconsMaterial.DeleteForeverTwoTone />
+                            </IconButton>
+                        }
+                    >
+                        <ListItemButton>
+                            <ListItemAvatar>
+                                <Avatar
+                                    alt={`Avatar n°${value + 1}`}
+                                    // src={`/static/images/avatar/${value + 1}.jpg`}
+                                />
+                            </ListItemAvatar>
+                            <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
+                        </ListItemButton>
+                    </ListItem>
+                )
+            })}
+        </List>
+    )
+}
 
 
 

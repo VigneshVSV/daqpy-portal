@@ -1,5 +1,5 @@
 // Internal & 3rd party functional libraries
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 // Custom functional libraries
 // Internal & 3rd party component libraries
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -8,9 +8,12 @@ import { alpha, styled } from '@mui/material/styles';
 // import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
 import RefreshTwoToneIcon from '@mui/icons-material/RefreshTwoTone';
 import { Stack, Typography, Link, Divider, Box, IconButton, FormControl, InputLabel, Select, MenuItem, Checkbox, 
-            ListItemText, OutlinedInput, SelectChangeEvent } from '@mui/material';
+            ListItemText, OutlinedInput, SelectChangeEvent, ClickAwayListener } from '@mui/material';
+import { TreeView } from '@mui/x-tree-view/TreeView';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 // Custom component libraries 
 import { ApplicationState, PythonServer, getFullDomain } from '../../mobx/state-container';
+import axios from 'axios';
 
 
 
@@ -71,13 +74,13 @@ export type RemoteObjectTreeProps = {
 
 export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteObject, fetchRemoteObjectInfo } : RemoteObjectTreeProps ) {
     
-    const [selectOpen, setSelectOpen] = React.useState<boolean>(false)
-    const [viewOptions, setViewOptions] = React.useState<Array<string>>(['slash segregated', 'http server segregated', 
+    const [selectOpen, setSelectOpen] = useState<boolean>(false)
+    const [viewOptions, setViewOptions] = useState<Array<string>>(['slash segregated', 'http server segregated', 
             'python class segregated', 'load on select'])
-    const [currentOptions, setCurrentOptions] = React.useState<Array<string>>(['http server segregated'])
-    const [loadOnSelect, setLoadOnSelect] = React.useState<boolean>(false)
+    const [currentOptions, setCurrentOptions] = useState<Array<string>>(['http server segregated'])
+    const [loadOnSelect, setLoadOnSelect] = useState<boolean>(false)
     const segregationOptions = ['slash segregated', 'http server segregated', 'python class segregated']
-    const [segregationType, setSegregationType] = React.useState<string>('http server segregated')
+    const [segregationType, setSegregationType] = useState<string>('http server segregated')
 
     const handleChange = (event: SelectChangeEvent) => {
         const { target: { value }, } = event;
@@ -112,79 +115,93 @@ export default function CustomizedTreeView({ globalState, sx, setCurrentRemoteOb
         setSelectOpen(false);
     };
 
+    useEffect(() => {
+        const fetchSubscribers = async() => {
+            try {
+                const response = await axios.get(
+                    `${globalState.primaryHostServer}/subscribers`,
+                    { withCredentials : true }
+                    )
+                    if(response.status === 200)
+                        globalState.servers = response.data
+            } catch(error) {
+                
+            }
+        }
+        fetchSubscribers()
+    }, [])
+
     return (
-        <Stack> 
+        <Stack sx={{ overflowX : "scroll", resize : "horizontal" }}> 
             <Typography variant="caption">
                 SYSTEM HOST : 
             </Typography>
             <Link 
-                onClick={() => window.open(getFullDomain(globalState.primaryHostServer as PythonServer) + '/paths')} 
-                sx={{display : 'flex', alignItems : "center", cursor:'pointer', fontSize : 14,  
-                        color : "#0000EE" }}
+                onClick={() => window.open(globalState.primaryHostServer as string, "_blank")} 
+                sx={{ display : 'flex', alignItems : "center", cursor:'pointer', fontSize : 14,  
+                        color : "#0000EE", flexGrow : 1 }}
                 underline="hover"
                 variant="caption"
             >
-                {(globalState.primaryHostServer as PythonServer).qualifiedIP}
+                {globalState.primaryHostServer as string}
             </Link> 
-            {/* <TreeView
+            <TreeView
                 id="remote-object-tree-view"
                 defaultExpanded={['1']}
                 defaultCollapseIcon={<MinusSquare />}
                 defaultExpandIcon={<PlusSquare />}
                 defaultEndIcon={<CloseSquare />}
-                sx={sx}
+                sx={{ pr : 2, display : 'flex', flexGrow : 1 }}
                 onNodeSelect={handleNodeSelect}
             >
-                {(globalState.primaryHostServer as PythonServer).remote_objects.map((instance_name, index) =>
+                {/* {(globalState.primaryHostServer as PythonServer).remote_objects.map((instance_name, index) =>
                     <StyledTreeItem 
                         nodeId={getFullDomain((globalState.primaryHostServer as PythonServer)) + '/' + instance_name} 
                         label={instance_name}
                         key={instance_name}
                     />
-                )}
-                <Box sx={{pb : 1, pt : 1}}>
+                )} */}
+                <Stack sx={{ display : 'flex', flexGrow : 1 }}>
                     <Divider>
                         <Typography variant='caption'>
                             REMOTE OBJECTS
                         </Typography>
                     </Divider>
-                    <Stack direction='row'>
+                    <Stack direction='row' sx={{ display : 'flex', flexGrow : 1 }}>
                         <IconButton>
                             <RefreshTwoToneIcon></RefreshTwoToneIcon>
                         </IconButton>
-                        {/* <ClickAwayListener onClickAway={handleSelectClose}>
-                            <div> */}
-                        {/*
-                            <FormControl sx={{ m: 1, width: 300 }}>
-                                <InputLabel id="demo-multiple-checkbox-label" size="small" >options</InputLabel>
-                                <Select
-                                    open={selectOpen}
-                                    labelId="demo-multiple-checkbox-label"
-                                    id="demo-multiple-checkbox"
-                                    onOpen={handleSelectOpen}
-                                    multiple
-                                    // @ts-ignore
-                                    value={currentOptions}
-                                    onChange={handleChange}
-                                    input={<OutlinedInput label="options" size="small" />}
-                                    // @ts-ignore
-                                    renderValue={(selected) => selected.join(', ')}
+                        <ClickAwayListener onClickAway={handleSelectClose}>
+                            <Box sx={{ display : 'flex', flexGrow : 1 }}>
+                                <FormControl sx={{ m: 1, display : 'flex', flexGrow : 1  }}>
+                                    <InputLabel id="demo-multiple-checkbox-label" size="small" >options</InputLabel>
+                                    <Select
+                                        // open={selectOpen}
+                                        labelId="demo-multiple-checkbox-label"
+                                        id="demo-multiple-checkbox"
+                                        // onOpen={handleSelectOpen}
+                                        multiple
+                                        // @ts-ignore
+                                        value={currentOptions}
+                                        onChange={handleChange}
+                                        input={<OutlinedInput label="options" size="small" />}
+                                        // @ts-ignore
+                                        renderValue={(selected) => selected.join(', ')}
                                     >
-                                {viewOptions.map((choice : string) => (
-                                    <MenuItem key={choice} value={choice}>
-                                        <Checkbox checked={currentOptions.indexOf(choice) > -1} />
-                                        <ListItemText primary={choice} />
-                                    </MenuItem>
-                                ))}
-                                </Select>
-                            </FormControl>
-                            {/* </div>
-                        </ClickAwayListener> */}
-                    {/*
+                                        {viewOptions.map((choice : string) => (
+                                            <MenuItem key={choice} value={choice}>
+                                                <Checkbox checked={currentOptions.indexOf(choice) > -1} />
+                                                <ListItemText primary={choice} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl> 
+                            </Box>
+                        </ClickAwayListener> 
                     </Stack>
-                </Box>
+                </Stack>
                 <SegregatedTreeItems globalState={globalState} segregationType={segregationType} />
-            </TreeView> */}
+            </TreeView>
         </Stack>
     );
 }
