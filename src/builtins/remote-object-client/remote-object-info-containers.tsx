@@ -94,7 +94,7 @@ export class ResourceInformation {
 
     constructor(data : any) {
         this._doc = data.doc
-        this.scada_info = data.scada_info 
+        this.scada_info = data.remote_info
         this.name = data.name 
         this.type = data.type
         this.owner = data.owner
