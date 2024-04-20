@@ -349,7 +349,7 @@ export const LiveLogViewer = ({ clientState, globalState } : LiveLogViewerProps)
                     interval : Number(logInterval)
                 }
             }) as AxiosResponse
-            if(response.status !== 200) {
+            if(response.status !== 200 && response.status !== undefined) {
                 if(response.data.exception) 
                     clientState.setError(response.data.exception.message, response.data.exception.traceback)
                 else 
@@ -390,7 +390,7 @@ export const LiveLogViewer = ({ clientState, globalState } : LiveLogViewerProps)
                         method : 'post',
                         baseURL : clientState.domain, 
                     }) as AxiosResponse
-                    if(response.status !== 200) {
+                    if(response.status !== 200 && response.status !== undefined) {
                         if(response.data.exception) 
                             clientState.setError(response.data.exception.message, response.data.exception.traceback)
                         else 

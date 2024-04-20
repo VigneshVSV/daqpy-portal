@@ -1,5 +1,5 @@
 // Internal & 3rd party functional libraries
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 // Custom functional libraries
 // Internal & 3rd party component libraries
@@ -17,7 +17,11 @@ type EventSelectWindowProps =  {
 
 export const SelectedEventWindow = observer((props : EventSelectWindowProps) => {
 
-    const [eventURL, setEventURL] = useState(props.clientState.domain + props.event.fullpath)
+    const [eventURL, setEventURL] = useState<string>(props.clientState.domain + props.event.fullpath)
+
+    useEffect(() => 
+        setEventURL(props.clientState.domain + props.event.fullpath)
+    , [props.event.fullpath])
    
     const streamEvent = () => {
         let source = new EventSource(eventURL)
@@ -38,7 +42,7 @@ export const SelectedEventWindow = observer((props : EventSelectWindowProps) => 
 
     const stopEvent = () => {
         let eventSrc = props.clientState.eventSources[eventURL]
-        if(eventSrc){
+        if(eventSrc) {
             eventSrc.close()
             console.log(`closing event source ${eventURL}`)
             props.clientState.removeEventSource(eventURL)

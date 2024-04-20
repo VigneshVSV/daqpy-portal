@@ -139,7 +139,7 @@ export const MethodExecutionClient = (props : MethodExecutionProps) => {
             }) as AxiosResponse
             let executionTime = Date.now() - requestTime_
             props.clientState.setLastResponse(response)
-            if(response.status === 200) {
+            if(response.status >= 200 && response.status < 300) {
                 if(props.clientState.stringifyOutput) 
                     console.log("\n" + JSON.stringify(response.data, null, 2))
                 else 

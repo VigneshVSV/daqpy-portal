@@ -4,6 +4,7 @@ import {  useCallback, useState } from "react";
 import { styled } from '@mui/system';
 import { observer } from 'mobx-react-lite';
 import { AxiosResponse } from 'axios';
+import DOMPurify from 'dompurify';
 // Custom functional libraries
 import { asyncRequest } from "@hololinked/mobx-render-engine/utils/http";
 // Internal & 3rd party component libraries
@@ -170,24 +171,20 @@ export const ClassDocWindow = observer(( props : ClassDocWindowProps ) => {
     const classDoc = props.clientState.remoteObjectInfo.classDoc
 
     return (
-        <Box sx={{ flexGrow : 1, display : 'flex', p: 1}}>  
-            <Stack sx={{ flexGrow : 1, display : 'flex' }}> 
-                {classDoc ? 
-                    <Typography component='div' sx={{ flexGrow : 1, display : 'inline-block', pt : 2}}>
-                        {classDoc}
-                    </Typography> : 
-                    <Typography sx={{ flexGrow : 1, display : 'flex', pt : 2}}>
-                        no class doc provided
-                    </Typography>
-                }
-                <Box sx={{ flexGrow : 1, pt : 5, display : 'flex' }}>
-                    <Stack sx = {{ flexGrow : 0.5, display : 'flex' }}>
-                        <PostmanFetcher clientState={props.clientState} />
-                        <FileServer clientState={props.clientState} />
-                    </Stack>
-                </Box>
-            </Stack>
-        </Box>
+        <Stack sx={{ flexGrow : 1, display : 'flex' }}> 
+                <Typography sx={{ pt : 2, pb : 5}}>
+                    {classDoc ? 
+                        <div dangerouslySetInnerHTML={{__html : DOMPurify.sanitize(classDoc)}}></div>
+                        : "no class doc provided" 
+                    }
+                </Typography>
+            <Box sx={{ display : 'flex' }}>
+                <Stack sx = {{ flexGrow : 0.5, display : 'flex' }}>
+                    <PostmanFetcher clientState={props.clientState} />
+                    <FileServer clientState={props.clientState} />
+                </Stack>
+            </Box>
+        </Stack>
     )
 })
 
@@ -234,7 +231,7 @@ const PostmanFetcher = (props : any) => {
     }, [postmanDomainPrefix, props.clientState.baseURL])
 
     return (
-        <Stack direction='row' sx = {{ flexGrow : 0.25, display : 'flex' }}>
+        <Stack direction='row' sx = {{ display : 'flex' }}>
             <TextField
                 size='small'
                 sx={{ pr: 2, flexGrow : 0.75 }}
@@ -243,6 +240,7 @@ const PostmanFetcher = (props : any) => {
                 onChange={(event) => setDomainPrefix(event.target.value)}
             />
             <Button 
+                size="small"
                 variant="outlined" 
                 endIcon={<DownloadTwoToneIcon/>} 
                 onClick={getPostmanCollection}
@@ -325,7 +323,7 @@ const FileServer = ( props : { clientState : RemoteObjectClientState } ) => {
     return (
         <>
             {documentationParameters? 
-                <Stack direction='row' sx = {{ flexGrow : 0.25, display : 'flex', pt : 3 }}>
+                <Stack direction='row' sx = {{ display : 'flex', pt : 3 }}>
                     <Autocomplete
                         id="remote-object-documentation-file-server-listed-files"
                         disablePortal

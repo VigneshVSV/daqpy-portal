@@ -31,6 +31,7 @@
     "ag-grid-community": "^31.0.1",
     "axios": "^1.6.2",
     "console-feed-optimized": "^3.5.0",
+    "dompurify": "^3.1.0",
     "idb": "^8.0.0",
     "is-electron": "^2.2.2",
     "loglevel": "^1.8.1",

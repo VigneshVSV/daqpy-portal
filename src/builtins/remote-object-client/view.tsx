@@ -460,7 +460,7 @@ export const ObjectSelectWindow = observer(( { clientState, globalState, name, u
                         else 
                             return (
                                 <div key={key}>
-                                    <Divider>{key.toUpperCase()}</Divider>
+                                    <Divider><Typography variant="button">{key.toUpperCase()}</Typography></Divider>
                                     {objects[key].map((object : ResourceInformation, index : number) => {
                                         return (
                                             <ListItem 
@@ -556,6 +556,7 @@ export const GUIViewer = (props : any) => {
 
     return (
         <>
+            <Typography sx={{p : 2}}>No GUI logic implmeneted</Typography>
             {/* {props.hasGUI? 
                 <DashboardView stateManager={dashboardStateManager} setGlobalLocation={null}/> :   
                     <Typography sx={{ p : 2 }}>
