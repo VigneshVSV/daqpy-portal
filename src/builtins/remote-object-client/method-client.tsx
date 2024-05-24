@@ -144,12 +144,12 @@ export const MethodExecutionClient = (props : MethodExecutionProps) => {
                     console.log("\n" + JSON.stringify(response.data, null, 2))
                 else 
                     console.log(response.data)
-                if(response.data.state) 
+                if(response.data && response.data.state) 
                     props.clientState.setRemoteObjectState(response.data.state[props.method.owner_instance_name])
                 if(props.clientState.hasError)
                     props.clientState.resetError()
             }
-            else if(response.data.exception) {
+            else if(response.data && response.data.exception) {
                 props.clientState.setError(response.data.exception.message, response.data.exception.traceback)
                 if(props.clientState.stringifyOutput)
                     console.log(JSON.stringify(response, null, 2))
@@ -161,12 +161,12 @@ export const MethodExecutionClient = (props : MethodExecutionProps) => {
                     console.log(JSON.stringify(response, null, 2))
                 else 
                     console.log(response)
-                console.log("execution unsuccessful")
+                // console.log("execution unsuccessful")
             }
             console.log(`METHOD EXECUTION : ${props.method.qualname}, REQUEST TIME : ${requestTime}, RESPONSE TIME : ${getFormattedTimestamp()}, EXECUTION TIME : ${executionTime.toString()}ms, RESPONSE BELOW : `)
         } 
         catch(error : any){
-            console.log(error)
+            // console.log(error)
             props.clientState.setError(error.message, null)
         } 
     }, [props.clientState, props.method, fullpath, fetchExecutionLogs, kwargsValue, timeout])

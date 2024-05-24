@@ -162,10 +162,10 @@ export const ParameterRWClient = (props : ParameterClientProps) => {
             else 
                 console.log(response.data)    
             console.log(`PARAMETER ${mode} : ${props.parameter.name}, REQUEST TIME : ${requestTime}, RESPONSE TIME : ${getFormattedTimestamp()}, EXECUTION TIME : ${executionTime.toString()}ms, RESPONSE BELOW :`)
-            if(response.data.state) 
+            if(response.data && response.data.state) 
                 props.clientState.setRemoteObjectState(response.data.state[props.parameter.owner_instance_name])
             props.clientState.setLastResponse(response)
-            if(response.data.exception) 
+            if(response.data && response.data.exception) 
                 props.clientState.setError(response.data.exception.message, response.data.exception.traceback)
             else if (props.clientState.hasError)
                 props.clientState.resetError()

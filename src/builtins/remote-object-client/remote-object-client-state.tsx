@@ -173,7 +173,7 @@ export class RemoteObjectClientState {
         try {
             let baseurl = arg ? arg : this.baseURL
             const response = await axios({
-                url : "/resources/gui", 
+                url : "/resources/portal-app", 
                 method : "get", 
                 baseURL : baseurl,
                 // httpsAgent: new https.Agent({ rejectUnauthorized: false })
@@ -183,18 +183,18 @@ export class RemoteObjectClientState {
                 let roinfo : RemoteObjectInformation = new RemoteObjectInformation({instance_name : '', parameters : [], 
                     methods : [], events : [], classdoc : null, inheritance : [], 
                     documentation : null, GUI : null}) 
-                roinfo.instance_name = response.data.returnValue.instance_name 
-                for(let key of Object.keys(response.data.returnValue.parameters)) 
-                    roinfo.parameters.push(new ParameterInformation(response.data.returnValue.parameters[key] as ParameterInfo))                    
-                for(let key of Object.keys(response.data.returnValue.methods)) 
-                    roinfo.methods.push(new MethodInformation(response.data.returnValue.methods[key] as MethodInfo))                    
-                for(let key of Object.keys(response.data.returnValue.events)) 
-                    roinfo.events.push(new EventInformation(response.data.returnValue.events[key] as EventInfo))
-                if(response.data.returnValue.classdoc) 
-                    roinfo.classdoc = response.data.returnValue.classdoc.join(' ')
-                if(response.data.returnValue.inheritance) 
-                    roinfo.inheritance = response.data.returnValue.inheritance
-                this.setRemoteObjectInfo(roinfo, response.data.state[roinfo.instance_name] )
+                roinfo.instance_name = response.data.instance_name 
+                for(let key of Object.keys(response.data.parameters)) 
+                    roinfo.parameters.push(new ParameterInformation(response.data.parameters[key] as ParameterInfo))                    
+                for(let key of Object.keys(response.data.methods)) 
+                    roinfo.methods.push(new MethodInformation(response.data.methods[key] as MethodInfo))                    
+                for(let key of Object.keys(response.data.events)) 
+                    roinfo.events.push(new EventInformation(response.data.events[key] as EventInfo))
+                if(response.data.classdoc) 
+                    roinfo.classdoc = response.data.classdoc.join(' ')
+                if(response.data.inheritance) 
+                    roinfo.inheritance = response.data.inheritance
+                this.setRemoteObjectInfo(roinfo, "UNKNOWN" )
                 this.setFetchSuccessful(true)
                 this.resetError()
             }

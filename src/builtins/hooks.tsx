@@ -39,8 +39,8 @@ export const useDashboard = (dashboardURL : string, dashboardStateManager : Muta
             }
             else if(response.status === 200) {
                 try {
-                    const UIComponents =  response.data.returnValue? response.data.returnValue.UIcomponents : response.data.UIcomponents
-                    const actions = response.data.returnValue? response.data.returnValue.actions : response.data.actions
+                    const UIComponents =  response.data? response.data.UIcomponents : response.data.UIcomponents
+                    const actions = response.data? response.data.actions : response.data.actions
                     dashboardStateManager.current.deleteComponents()
                     dashboardStateManager.current.deleteActions()
                     dashboardStateManager.current.store(

@@ -125,7 +125,7 @@ export const RemoteObjectLocator = observer(( {clientState, setGlobalLocation, u
                 </IconButton>
                 <IconButton 
                     id="remote-object-load-using-locator"
-                    onClick={() => window.open(clientState.baseURL + '/resources/gui')}
+                    onClick={() => window.open(clientState.baseURL + '/resources/portal-app')}
                     sx = {{ borderRadius : 0 }}
                 >
                     <OpenInNewTwoToneIcon /> 

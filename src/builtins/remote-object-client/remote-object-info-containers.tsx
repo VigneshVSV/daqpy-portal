@@ -206,12 +206,15 @@ export class MethodInformation extends ResourceInformation {
     
     constructor(data : MethodInfo) {
         super(data)
+        // @ts-ignore
+        this.name = data.obj_name
         this.module = data.module 
         this.qualname = data.qualname 
         this.signature = data.signature
         this.kwdefaults = data.kwdefaults
         this.defaults = data.defaults
-        this.fullpath = data.instruction
+        // @ts-ignore
+        this.fullpath = data.remote_info.fullpath
     }  
 }
 

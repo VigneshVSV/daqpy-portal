@@ -202,7 +202,7 @@ const PostmanFetcher = (props : any) => {
                 // httpsAgent: new https.Agent({ rejectUnauthorized: false })
         }) as AxiosResponse
         if(response.status >= 200 && response.status <= 250) {
-            let blob = new Blob([JSON.stringify(response.data.returnValue, null, 4)], {
+            let blob = new Blob([JSON.stringify(response.data, null, 4)], {
                 type : 'application/json'
             })
             const fileUrl = URL.createObjectURL(blob);
