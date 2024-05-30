@@ -184,10 +184,10 @@ export class RemoteObjectClientState {
                     methods : [], events : [], classdoc : null, inheritance : [], 
                     documentation : null, GUI : null}) 
                 roinfo.instance_name = response.data.instance_name 
-                for(let key of Object.keys(response.data.parameters)) 
-                    roinfo.parameters.push(new ParameterInformation(response.data.parameters[key] as ParameterInfo))                    
-                for(let key of Object.keys(response.data.methods)) 
-                    roinfo.methods.push(new MethodInformation(response.data.methods[key] as MethodInfo))                    
+                for(let key of Object.keys(response.data.properties)) 
+                    roinfo.parameters.push(new ParameterInformation(response.data.properties[key] as ParameterInfo))                    
+                for(let key of Object.keys(response.data.actions)) 
+                    roinfo.methods.push(new MethodInformation(response.data.actions[key] as MethodInfo))                    
                 for(let key of Object.keys(response.data.events)) 
                     roinfo.events.push(new EventInformation(response.data.events[key] as EventInfo))
                 if(response.data.classdoc) 
